@@ -91,10 +91,11 @@ Full source code is on github.
 ## MicroCore.cpp
 
 `MicroCore` class is a micro version of [cryptonode::core](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.h) class. The core class is the main
-class with the access to the blockchain that the monero deamon is using. In the `cryptonode::core` class, the most important method (at least for for this example), is the [init](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.cpp#L206) method. The main goal of the `init` function
-is to create instance of [Blockchain](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/blockchain.h) class. The blockchain
+class with the access to the blockchain that the monero daemon is using. In the `cryptonode::core` class, the most important method (at least for this example), is the [init](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.cpp#L206) method. The main goal of the `init` function
+is to create instance of [Blockchain](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/blockchain.h) class. The `Blockchain` is the high level interface to blockchain. The low level one is through `BlockchainLMDB` in our case, which
+can also be accessed through `Blockchain` object.
 
-The orginal class does a lot of things, which we dont need here, such as reading program options, checking
+The original class does a lot of things, which we dont need here, such as reading program options, checking
 file
 
 ## main.cpp

@@ -17,6 +17,14 @@ namespace xmreg
     using namespace cryptonote;
     using namespace std;
 
+    /**
+     * Micro version of cryptonode::core class
+     * Micro version of constructor,
+     * init and destructor are implemted.
+     *
+     * Just enough to read the blockchain
+     * database for use in the example.
+     */
     class MicroCore {
 
         tx_memory_pool m_mempool;
