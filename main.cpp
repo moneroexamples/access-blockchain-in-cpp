@@ -48,7 +48,7 @@ int main() {
     // if it reads ok.
     uint64_t height = core_storage.get_current_blockchain_height();
 
-    cout << "Blockchain height:" << height << endl;
+    cout << "Current blockchain height:" << height << endl;
 
 
 
@@ -169,30 +169,8 @@ int main() {
     cout << "\nTotal xmr recivied: " << cryptonote::print_money(money_transfered) << endl;
 
 
-    cout << endl << endl;
 
+    cout << "\nEnd of program." << endl;
 
-
-    // print all transactions
-//    size_t idx {0};
-//    std::vector<crypto::hash> txids;
-//    core_storage.for_all_transactions([&txids, &idx](const crypto::hash& hash,
-//                                                const cryptonote::transaction& tx)->bool
-//                                       {
-//                                           if (++idx % 500 == 0)
-//                                             cout << "\r" << idx << ": " << hash << std::flush;
-//                                           txids.push_back(hash);
-//                                           return true;
-//                                       });
-//
-//    for (size_t i=0; i < txids.size(); ++i)
-//    {
-//        cout << i << ": "  << txids[i] << endl;
-//    }
-
-
-
-
-    cout << "Hgello, World!" << endl;
     return 0;
 }
