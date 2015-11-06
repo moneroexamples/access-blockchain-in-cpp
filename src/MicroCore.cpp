@@ -11,7 +11,7 @@ namespace xmreg
      * m_mempool and m_blockchain_storage depend
      * on each other.
      *
-     * So basically m_mempool initialized with
+     * So basically m_mempool is initialized with
      * reference to Blockchain (i.e., Blockchain&)
      * and m_blockchain_storage is initialized with
      * reference to m_mempool (i.e., tx_memory_pool&)

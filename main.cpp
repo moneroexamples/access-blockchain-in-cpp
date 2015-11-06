@@ -68,7 +68,7 @@ int main() {
 
 
     // we also need tx public key, rather than tx hash.
-    // to get it first, we obtained transaction object tx
+    // to get it, first, we obtained transaction object tx
     // and then we get its public key from tx's extras.
     cryptonote::transaction tx;
 
@@ -123,14 +123,14 @@ int main() {
     uint64_t money_transfered {0};
 
     // loop through outputs in the given tx
-    // to check which outputs our ours, we compare outputs
+    // to check which outputs our ours. we compare outputs'
     // public keys, with the public key that would had been
-    // generated for us.
+    // generated for us if we had gotten the outputs.
     for (size_t i = 0; i < output_no; ++i)
     {
         // get the tx output public key
         // that normally would be generated for us,
-        // if someone send us some xrm
+        // if someone had sent us some xmr
         crypto::public_key pubkey;
 
         crypto::derive_public_key(derivation,
