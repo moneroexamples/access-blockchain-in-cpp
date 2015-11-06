@@ -64,5 +64,12 @@ namespace xmreg
     }
 
 
+    string
+    print_address(const account_public_address& address)
+    {
+        return get_account_address_as_str(false, address);
+    }
+
+
 
 }

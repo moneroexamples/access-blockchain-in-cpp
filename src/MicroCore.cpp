@@ -10,9 +10,7 @@ namespace xmreg
     MicroCore::MicroCore():
             m_mempool(m_blockchain_storage),
             m_blockchain_storage(m_mempool)
-    {
-        std::cout << "MicroCorge" << std::endl;
-    }
+    {}
 
 
 
@@ -30,20 +28,20 @@ namespace xmreg
         try
         {
             db->open(blockchain_path, db_flags);
-
         }
         catch (const std::exception& e)
         {
-            LOG_PRINT_L0("Error opening database: " << e.what());
+            cerr << "Error opening database: " << e.what();
             return false;
         }
 
-        if(!db->m_open)
+        if(!db->is_open())
+        {
             return false;
+        }
 
-        bool r = m_blockchain_storage.init(db, false);
 
-        return r;
+        return m_blockchain_storage.init(db, false);
     }
 
     Blockchain&
@@ -60,6 +58,5 @@ namespace xmreg
         // created in the MicroCore::init().
         m_blockchain_storage.deinit();
     }
-
 
 }

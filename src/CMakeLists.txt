@@ -11,14 +11,9 @@ set(SOURCE_FILES
         MicroCore.cpp
 		tools.cpp)
 
-
+# make static library called libmyxrm
+# that we are going to link to
+# in the root CMakeLists.txt file
 add_library(myxrm
-		SHARED
-		${SOURCE_FILES}
-		${SOURCE_HEADERS}
-		)
-#
-#target_link_libraries(myxrm
-#		LINK_PRIVATE
-#	    	cryptonote_core
-#			blockchain_db)
+		STATIC
+		${SOURCE_FILES})
