@@ -1,9 +1,24 @@
 # access-blockchain-in-cpp
 
-Into
+How to develop on top of monero? One way is to use josn-rpc calls from
+any language capable of this, for example, as
+[shown in python](http://moneroexamples.github.io/python-json-rpc/). Another way
+is to use pubilc api of existing monero services such as
+ [moneroblocks](http://moneroblocks.eu/api). These to approaches can be useful,
+ but they have limitations in that they allow for only a fraction of what
+ monero can do. The reason is that most functionality of monero is available
+ through C++11 libraries. Those can be difficult to navigate and use.
+
+For this reason this example was created. To show can one can use c++ monero
+libraries to write something that uses the wealthy of monero libraries and tools.
 
 # Objective
-What the example is doing.
+To check which transaction's outputs in a given block belong to a given
+address. This is already possible using
+ [XMR test](http://xmrtests.llcoins.net/checktx.html) website. And this is good,
+ since it allows us to very results obtained this C++11 code with those
+ provided by XMR test.
+
 
 # Pre-requsits
 
@@ -196,6 +211,7 @@ namespace xmreg
 ## main.cpp
 
 ```c++
+
 #include "src/MicroCore.h"
 #include "src/tools.h"
 
@@ -207,14 +223,16 @@ unsigned int epee::g_test_dbg_lock_sleep = 0;
 int main() {
 
     // enable basic monero log output
-    // uint32_t log_level = 0;
-    // epee::log_space::get_set_log_detalisation_level(true, log_level);
-    // epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL); //LOGGER_NULL
+    uint32_t log_level = 0;
+    epee::log_space::get_set_log_detalisation_level(true, log_level);
+    epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL); //LOGGER_NULL
 
     // location of the lmdb blockchain
     string blockchain_path {"/home/mwo/.bitmonero/lmdb"};
 
     // input data: public address, private view key and tx hash
+    // they are hardcoded here, as I dont want to unnecessary
+    // bloat the code with parsing input arguments
     string address_str {"48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU"};
     string viewkey_str {"1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a"};
     string tx_hash_str {"66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577"};
@@ -237,7 +255,7 @@ int main() {
     // if it reads ok.
     uint64_t height = core_storage.get_current_blockchain_height();
 
-    cout << "Current blockchain height:" << height << endl;
+    cout << "Current blockchain height: " << height << endl;
 
 
 
@@ -296,10 +314,11 @@ int main() {
 
     // lets check our keys
     cout << "\n"
-         << "address         : <" << xmreg::print_address(address) << ">\n"
-         << "privateview key : "  << prv_view_key << "\n"
-         << "pubublic tx key : "  << pub_tx_key << "\n"
-         << "dervied key     : "  << derivation << "\n" << endl;
+         << "address          : <" << xmreg::print_address(address) << ">\n"
+         << "private view key : "  << prv_view_key << "\n"
+         << "tx hash          : <" << tx_hash_str << ">\n"
+         << "public tx key    : "  << pub_tx_key << "\n"
+         << "dervied key      : "  << derivation << "\n" << endl;
 
 
     // each tx that we (or the adddress we are checking) received
@@ -336,12 +355,12 @@ int main() {
                 = boost::get<cryptonote::txout_to_key>(tx.vout[i].target);
 
 
-        cout << "Output no: " << i << "," << tx_out_to_key.key;
+        cout << "Output no: " << i << ", " << tx_out_to_key.key;
 
         // check if the output's public key is ours
         if (tx_out_to_key.key == pubkey)
         {
-            // if so, that add the xmr amount to the money_transfered
+            // if so, than add the xmr amount to the money_transfered
             money_transfered += tx.vout[i].amount;
             cout << ", mine key: " << cryptonote::print_money(tx.vout[i].amount) << endl;
         }
@@ -352,7 +371,7 @@ int main() {
 
     }
 
-    cout << "\nTotal xmr recivied: " << cryptonote::print_money(money_transfered) << endl;
+    cout << "\nTotal xmr received: " << cryptonote::print_money(money_transfered) << endl;
 
 
     cout << "\nEnd of program." << endl;
@@ -362,27 +381,24 @@ int main() {
 ```
 
 # Output
-
+The main output is as follows:
 ```bash
-Current blockchain height:814338
+address          : <48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU>
+private view key : <1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a>
+tx hash          : <66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577>
+public tx key    : <0851f2ec7477b82618e028238164a9080325fe299dcf5f70f868729b50d00284>
+dervied key      : <8017f9944635b7b2e4dc2ddb9b81787e49b384dcb2abd474355fe62bee79fdd7>
 
-address    : <48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU>
-viewkey    : <1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a>
-txkey      : <0851f2ec7477b82618e028238164a9080325fe299dcf5f70f868729b50d00284>
-dervied key: <8017f9944635b7b2e4dc2ddb9b81787e49b384dcb2abd474355fe62bee79fdd7>
+Output no: 0, <c65ee61d95480988c1fd70f6078afafd4d90ef730fc3c4df59951d64136e911f>, not mine key
+Output no: 1, <67a5fd7e06640942f0d869e494fc9d297d5087609013cd3531d0da55de19045b>, not mine key
+Output no: 2, <a9e0f19422e68ed328315e92373388a3ebb418204a36d639bd1f2e870f4bc919>, mine key: 0.800000000000
+Output no: 3, <849b56538f199f0a7522fcd0b132e53eec4a822e9b70b0e7e6c9e2632f1328db>, mine key: 4.000000000000
+Output no: 4, <aba2e362f8ae0d79a4f33f9e4e27eecf79ad9c53eae86c27aa0281fb29aa6fdc>, not mine key
+Output no: 5, <2602e4ac211216571ab1afe631aae1f905f252a1150cb8c4e5f34b820d0d6b4a>, not mine key
 
-Output no: 0,<c65ee61d95480988c1fd70f6078afafd4d90ef730fc3c4df59951d64136e911f>, not mine key
-Output no: 1,<67a5fd7e06640942f0d869e494fc9d297d5087609013cd3531d0da55de19045b>, not mine key
-Output no: 2,<a9e0f19422e68ed328315e92373388a3ebb418204a36d639bd1f2e870f4bc919>, mine key: 0.800000000000
-Output no: 3,<849b56538f199f0a7522fcd0b132e53eec4a822e9b70b0e7e6c9e2632f1328db>, mine key: 4.000000000000
-Output no: 4,<aba2e362f8ae0d79a4f33f9e4e27eecf79ad9c53eae86c27aa0281fb29aa6fdc>, not mine key
-Output no: 5,<2602e4ac211216571ab1afe631aae1f905f252a1150cb8c4e5f34b820d0d6b4a>, not mine key
-
-Total xmr recivied: 4.800000000000
-
-End of program.
+Total xmr received: 4.800000000000
 ```
-
+These results agree with those obtained using [XMR test](http://xmrtests.llcoins.net/checktx.html).
 
 ## How can you help?
 

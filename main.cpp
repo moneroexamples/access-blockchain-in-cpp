@@ -12,14 +12,16 @@ unsigned int epee::g_test_dbg_lock_sleep = 0;
 int main() {
 
     // enable basic monero log output
-    // uint32_t log_level = 0;
-    // epee::log_space::get_set_log_detalisation_level(true, log_level);
-    // epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL); //LOGGER_NULL
+    uint32_t log_level = 0;
+    epee::log_space::get_set_log_detalisation_level(true, log_level);
+    epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL); //LOGGER_NULL
 
     // location of the lmdb blockchain
     string blockchain_path {"/home/mwo/.bitmonero/lmdb"};
 
     // input data: public address, private view key and tx hash
+    // they are hardcoded here, as I dont want to unnecessary
+    // bloat the code with parsing input arguments
     string address_str {"48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU"};
     string viewkey_str {"1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a"};
     string tx_hash_str {"66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577"};
@@ -42,7 +44,7 @@ int main() {
     // if it reads ok.
     uint64_t height = core_storage.get_current_blockchain_height();
 
-    cout << "Current blockchain height:" << height << endl;
+    cout << "Current blockchain height: " << height << endl;
 
 
 
@@ -101,10 +103,11 @@ int main() {
 
     // lets check our keys
     cout << "\n"
-         << "address         : <" << xmreg::print_address(address) << ">\n"
-         << "privateview key : "  << prv_view_key << "\n"
-         << "pubublic tx key : "  << pub_tx_key << "\n"
-         << "dervied key     : "  << derivation << "\n" << endl;
+         << "address          : <" << xmreg::print_address(address) << ">\n"
+         << "private view key : "  << prv_view_key << "\n"
+         << "tx hash          : <" << tx_hash_str << ">\n"
+         << "public tx key    : "  << pub_tx_key << "\n"
+         << "dervied key      : "  << derivation << "\n" << endl;
 
 
     // each tx that we (or the adddress we are checking) received
@@ -141,12 +144,12 @@ int main() {
                 = boost::get<cryptonote::txout_to_key>(tx.vout[i].target);
 
 
-        cout << "Output no: " << i << "," << tx_out_to_key.key;
+        cout << "Output no: " << i << ", " << tx_out_to_key.key;
 
         // check if the output's public key is ours
         if (tx_out_to_key.key == pubkey)
         {
-            // if so, that add the xmr amount to the money_transfered
+            // if so, than add the xmr amount to the money_transfered
             money_transfered += tx.vout[i].amount;
             cout << ", mine key: " << cryptonote::print_money(tx.vout[i].amount) << endl;
         }
@@ -157,7 +160,7 @@ int main() {
 
     }
 
-    cout << "\nTotal xmr recivied: " << cryptonote::print_money(money_transfered) << endl;
+    cout << "\nTotal xmr received: " << cryptonote::print_money(money_transfered) << endl;
 
 
     cout << "\nEnd of program." << endl;
