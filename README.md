@@ -98,9 +98,290 @@ can also be accessed through `Blockchain` object.
 The original class does a lot of things, which we dont need here, such as reading program options, checking
 file
 
+```c++
+#include "MicroCore.h"
+
+namespace xmreg
+{
+    /**
+     * The constructor is interesting, as
+     * m_mempool and m_blockchain_storage depend
+     * on each other.
+     *
+     * So basically m_mempool initialized with
+     * reference to Blockchain (i.e., Blockchain&)
+     * and m_blockchain_storage is initialized with
+     * reference to m_mempool (i.e., tx_memory_pool&)
+     *
+     * The same is done in cryptonode::core.
+     */
+    MicroCore::MicroCore():
+            m_mempool(m_blockchain_storage),
+            m_blockchain_storage(m_mempool)
+    {}
+
+
+    /**
+     * Initialized the MicroCore object.
+     *
+     * Create BlockchainLMDB on the heap.
+     * Open database files located in blockchain_path.
+     * Initialize m_blockchain_storage with the BlockchainLMDB object.
+     */
+    bool
+    MicroCore::init(const string& blockchain_path)
+    {
+        int db_flags = 0;
+
+        // MDB_RDONLY will result in
+        // m_blockchain_storage.deinit() producing
+        // error messages.
+
+        //db_flags |= MDB_RDONLY ;
+
+        db_flags |= MDB_NOSYNC;
+
+        BlockchainDB* db = nullptr;
+        db = new BlockchainLMDB();
+
+        try
+        {
+            db->open(blockchain_path, db_flags);
+        }
+        catch (const std::exception& e)
+        {
+            cerr << "Error opening database: " << e.what();
+            return false;
+        }
+
+        if(!db->is_open())
+        {
+            return false;
+        }
+
+        return m_blockchain_storage.init(db, false);
+    }
+
+    /**
+    * Get m_blockchain_storage.
+    * Initialize m_blockchain_storage with the BlockchainLMDB object.
+    */
+    Blockchain&
+    MicroCore::get_core()
+    {
+        return m_blockchain_storage;
+    }
+
+
+    /**
+     * De-initialized Blockchain.
+     *
+     * Its needed to mainly deallocate
+     * new BlockchainDB object
+     * created in the MicroCore::init().
+     *
+     * It also tries to synchronize the blockchain.
+     * And this is the reason when, if MDB_RDONLY
+     * is set, we are getting error messages. Because
+     * blockchain is readonly and we try to synchronize it.
+     */
+    MicroCore::~MicroCore()
+    {
+        m_blockchain_storage.deinit();
+    }
+
+}
+```
+
 ## main.cpp
 
-Source code
+```c++
+#include "src/MicroCore.h"
+#include "src/tools.h"
+
+
+using namespace std;
+
+unsigned int epee::g_test_dbg_lock_sleep = 0;
+
+int main() {
+
+    // enable basic monero log output
+    // uint32_t log_level = 0;
+    // epee::log_space::get_set_log_detalisation_level(true, log_level);
+    // epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL); //LOGGER_NULL
+
+    // location of the lmdb blockchain
+    string blockchain_path {"/home/mwo/.bitmonero/lmdb"};
+
+    // input data: public address, private view key and tx hash
+    string address_str {"48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU"};
+    string viewkey_str {"1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a"};
+    string tx_hash_str {"66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577"};
+
+
+    // our micro cryptonote core
+    xmreg::MicroCore mcore;
+
+    if (!mcore.init(blockchain_path))
+    {
+        cerr << "Error accessing blockchain." << endl;
+        return 1;
+    }
+
+    // get the high level cryptonote::Blockchain object to interact
+    // with the blockchain lmdb database
+    cryptonote::Blockchain& core_storage = mcore.get_core();
+
+    // get the current blockchain height. Just to check
+    // if it reads ok.
+    uint64_t height = core_storage.get_current_blockchain_height();
+
+    cout << "Current blockchain height:" << height << endl;
+
+
+
+    // parse string representing of monero address
+    cryptonote::account_public_address address;
+
+    if (!xmreg::parse_str_address(address_str,  address))
+    {
+        cerr << "Cant parse string address: " << address_str << endl;
+        return 1;
+    }
+
+
+    // parse string representing of our private viewkey
+    crypto::secret_key prv_view_key;
+    if (!xmreg::parse_str_secret_key(viewkey_str, prv_view_key))
+    {
+        cerr << "Cant parse view key: " << viewkey_str << endl;
+        return 1;
+    }
+
+
+    // we also need tx public key, rather than tx hash.
+    // to get it first, we obtained transaction object tx
+    // and then we get its public key from tx's extras.
+    cryptonote::transaction tx;
+
+    if (!xmreg::get_tx_pub_key_from_str_hash(core_storage, tx_hash_str, tx))
+    {
+        cerr << "Cant find transaction with hash: " << tx_hash_str << endl;
+        return 1;
+    }
+
+
+    crypto::public_key pub_tx_key = cryptonote::get_tx_pub_key_from_extra(tx);
+
+    if (pub_tx_key == cryptonote::null_pkey)
+    {
+        cerr << "Cant get public key of tx with hash: " << tx_hash_str << endl;
+        return 1;
+    }
+
+
+    // public transaction key is combined with our view key
+    // to get so called, derived key.
+    crypto::key_derivation derivation;
+
+    if (!generate_key_derivation(pub_tx_key, prv_view_key, derivation))
+    {
+        cerr << "Cant get dervied key for: " << "\n"
+             << "pub_tx_key: " << prv_view_key << " and "
+             << "prv_view_key" << prv_view_key << endl;
+        return 1;
+    }
+
+
+    // lets check our keys
+    cout << "\n"
+         << "address         : <" << xmreg::print_address(address) << ">\n"
+         << "privateview key : "  << prv_view_key << "\n"
+         << "pubublic tx key : "  << pub_tx_key << "\n"
+         << "dervied key     : "  << derivation << "\n" << endl;
+
+
+    // each tx that we (or the adddress we are checking) received
+    // contains a number of outputs.
+    // some of them are ours, some not. so we need to go through
+    // all of them in a given tx block, to check with outputs are ours.
+
+    // get the total number of outputs in a transaction.
+    size_t output_no = tx.vout.size();
+
+    // sum amount of xmr sent to us
+    // in the given transaction
+    uint64_t money_transfered {0};
+
+    // loop through outputs in the given tx
+    // to check which outputs our ours, we compare outputs
+    // public keys, with the public key that would had been
+    // generated for us.
+    for (size_t i = 0; i < output_no; ++i)
+    {
+        // get the tx output public key
+        // that normally would be generated for us,
+        // if someone send us some xrm
+        crypto::public_key pubkey;
+
+        crypto::derive_public_key(derivation,
+                                  i,
+                                  address.m_spend_public_key,
+                                  pubkey);
+
+
+        // get tx output public key
+        const cryptonote::txout_to_key tx_out_to_key
+                = boost::get<cryptonote::txout_to_key>(tx.vout[i].target);
+
+
+        cout << "Output no: " << i << "," << tx_out_to_key.key;
+
+        // check if the output's public key is ours
+        if (tx_out_to_key.key == pubkey)
+        {
+            // if so, that add the xmr amount to the money_transfered
+            money_transfered += tx.vout[i].amount;
+            cout << ", mine key: " << cryptonote::print_money(tx.vout[i].amount) << endl;
+        }
+        else
+        {
+            cout << ", not mine key " << endl;
+        }
+
+    }
+
+    cout << "\nTotal xmr recivied: " << cryptonote::print_money(money_transfered) << endl;
+
+
+    cout << "\nEnd of program." << endl;
+
+    return 0;
+}
+```
+
+# Output
+
+```bash
+Current blockchain height:814338
+
+address    : <48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU>
+viewkey    : <1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a>
+txkey      : <0851f2ec7477b82618e028238164a9080325fe299dcf5f70f868729b50d00284>
+dervied key: <8017f9944635b7b2e4dc2ddb9b81787e49b384dcb2abd474355fe62bee79fdd7>
+
+Output no: 0,<c65ee61d95480988c1fd70f6078afafd4d90ef730fc3c4df59951d64136e911f>, not mine key
+Output no: 1,<67a5fd7e06640942f0d869e494fc9d297d5087609013cd3531d0da55de19045b>, not mine key
+Output no: 2,<a9e0f19422e68ed328315e92373388a3ebb418204a36d639bd1f2e870f4bc919>, mine key: 0.800000000000
+Output no: 3,<849b56538f199f0a7522fcd0b132e53eec4a822e9b70b0e7e6c9e2632f1328db>, mine key: 4.000000000000
+Output no: 4,<aba2e362f8ae0d79a4f33f9e4e27eecf79ad9c53eae86c27aa0281fb29aa6fdc>, not mine key
+Output no: 5,<2602e4ac211216571ab1afe631aae1f905f252a1150cb8c4e5f34b820d0d6b4a>, not mine key
+
+Total xmr recivied: 4.800000000000
+
+End of program.
+```
 
 
 ## How can you help?

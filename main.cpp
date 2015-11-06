@@ -1,9 +1,5 @@
 #include <iostream>
-#include <memory>
 #include <string>
-#include <vector>
-
-
 
 #include "src/MicroCore.h"
 #include "src/tools.h"
@@ -12,8 +8,6 @@
 using namespace std;
 
 unsigned int epee::g_test_dbg_lock_sleep = 0;
-
-
 
 int main() {
 
@@ -98,22 +92,19 @@ int main() {
 
     if (!generate_key_derivation(pub_tx_key, prv_view_key, derivation))
     {
-        cerr << "Cant get dervied key for: " << endl
+        cerr << "Cant get dervied key for: " << "\n"
              << "pub_tx_key: " << prv_view_key << " and "
              << "prv_view_key" << prv_view_key << endl;
         return 1;
     }
 
 
-
-
     // lets check our keys
-    cout << endl;
-    cout << "address    : <" << xmreg::print_address(address) << ">" << endl
-         << "viewkey    : "  << prv_view_key << endl
-         << "txkey      : "  << pub_tx_key << endl
-         << "dervied key: "  << derivation << endl;
-    cout << endl;
+    cout << "\n"
+         << "address         : <" << xmreg::print_address(address) << ">\n"
+         << "privateview key : "  << prv_view_key << "\n"
+         << "pubublic tx key : "  << pub_tx_key << "\n"
+         << "dervied key     : "  << derivation << "\n" << endl;
 
 
     // each tx that we (or the adddress we are checking) received
@@ -167,7 +158,6 @@ int main() {
     }
 
     cout << "\nTotal xmr recivied: " << cryptonote::print_money(money_transfered) << endl;
-
 
 
     cout << "\nEnd of program." << endl;
