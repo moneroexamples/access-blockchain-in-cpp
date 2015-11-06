@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Monero Examples by moneroexamples</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Monero Examples</h1>
+      <h2 class="project-tagline">access-blockchain-in-cpp</h2>
+      <a href="https://github.com/moneroexamples/access-blockchain-in-cpp" class="btn">View on GitHub</a>
+      <a href="https://github.com/moneroexamples/access-blockchain-in-cpp/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/moneroexamples/access-blockchain-in-cpp/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="access-blockchain-in-cpp" class="anchor" href="#access-blockchain-in-cpp" aria-hidden="true"><span class="octicon octicon-link"></span></a>access-blockchain-in-cpp</h1>
+
+<p>How to develop on top of monero? One way is to use josn-rpc calls from
+any language capable of this, for example, as
+<a href="http://moneroexamples.github.io/python-json-rpc/">shown in python</a>. Another way
+is to use pubilc api of existing monero services such as
+ <a href="http://moneroblocks.eu/api">moneroblocks</a>. These to approaches can be useful,
+ but they have limitations in that they allow for only a fraction of what
+ monero can do. The reason is that most functionality of monero is available
+ through C++11 libraries. Those can be difficult to navigate and use.</p>
+
+<p>For this reason this example was created. To show can one can use c++ monero
+libraries to write something that uses the wealthy of monero libraries and tools.</p>
+
+<h1>
+<a id="objective" class="anchor" href="#objective" aria-hidden="true"><span class="octicon octicon-link"></span></a>Objective</h1>
+
+<p>To check which transaction's outputs in a given block belong to a given
+address. This is already possible using
+ <a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a> website. And this is good,
+ since it allows us to very results obtained this C++11 code with those
+ provided by XMR test.</p>
+
+<h1>
+<a id="pre-requsits" class="anchor" href="#pre-requsits" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pre-requsits</h1>
+
+<p>Everthing here was done and tested on
+Ubuntu 14.04 x86_64 and Ubuntu 15.10 x86_64.</p>
+
+<p>For monero node is using <code>lmdbq</code>, thus I use this database only in this example.
+I could not test on <code>berkeleydb</code>, thus its not included here.</p>
+
+<h2>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"># refresh ubuntu's repository</span>
+sudo apt-get update
+
+<span class="pl-c">#install git</span>
+sudo apt-get install git
+
+<span class="pl-c"># install dependencies</span>
+sudo apt-get install build-essential cmake libboost1.55-all-dev miniupnpc libunbound-dev graphviz doxygen libdb5.1++-dev</pre></div>
+
+<h2>
+<a id="monero-compilation" class="anchor" href="#monero-compilation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Monero compilation</h2>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"># download the latest bitmonero source code from github</span>
+git clone https://github.com/monero-project/bitmonero.git
+
+<span class="pl-c"># go into bitmonero folder</span>
+<span class="pl-c1">cd</span> bitmonero/
+
+make <span class="pl-c"># or make -j number_of_threads, e.g., make -j 2</span></pre></div>
+
+<h2>
+<a id="monero-static-libraries" class="anchor" href="#monero-static-libraries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Monero static libraries</h2>
+
+<p>When the compilation finishes, bunch of static monero libraries
+should be generated. We will need to link against.</p>
+
+<p>They will be spread around different subfolders of the <code>./build/</code> folder.
+So it is easier to just copy them into one folder. I assume that
+ <code>/opt/bitmonero-dev/libs</code> will be our folder where we are going to keep them.</p>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"># create the folder</span>
+sudo mkdir -p /opt/bitmonero-dev/libs
+
+<span class="pl-c"># find the static libraries files (i.e., those with extension of *.a)</span>
+<span class="pl-c"># and copy them to /opt/bitmonero-dev/libs</span>
+<span class="pl-c"># assuming you are still in bitmonero/ folder which got downloaded from</span>
+<span class="pl-c"># github</span>
+sudo find ./build/ -name <span class="pl-s"><span class="pl-pds">'</span>*.a<span class="pl-pds">'</span></span> -exec cp {} /opt/bitmonero-dev/libs  <span class="pl-cce">\;</span></pre></div>
+
+<h2>
+<a id="monero-headers" class="anchor" href="#monero-headers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Monero headers</h2>
+
+<p>Now we need to get headers, as this is our interface to the
+monero libraries.</p>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"># create the folder</span>
+sudo mkdir -p /opt/bitmonero-dev/headers
+
+<span class="pl-c"># find the header files (i.e., those with extension of *.h)</span>
+<span class="pl-c"># and copy them to /opt/bitmonero-dev/headers</span>
+<span class="pl-c"># but this time the structure of directions is important</span>
+<span class="pl-c"># so rsync is used to find and copy the headers files</span>
+sudo rsync -zarv --include=<span class="pl-s"><span class="pl-pds">"</span>*/<span class="pl-pds">"</span></span> --include=<span class="pl-s"><span class="pl-pds">"</span>*.h<span class="pl-pds">"</span></span> --exclude=<span class="pl-s"><span class="pl-pds">"</span>*<span class="pl-pds">"</span></span> --prune-empty-dirs ./ /opt/bitmonero-dev/headers</pre></div>
+
+<h2>
+<a id="cmake-confing-files" class="anchor" href="#cmake-confing-files" aria-hidden="true"><span class="octicon octicon-link"></span></a>cmake confing files</h2>
+
+<p><code>CMakeLists.txt</code> files and the structure of this project are can be studied at github. I wont be discussing them
+here. I tried to put comments in <code>CMakeLists.txt</code> to clarify what is there.</p>
+
+<p>The location of the Monero's headers and static libraries must be correctly
+indicated in  <code>CMakeLists.txt</code>. So if you put them in different folder
+that in this example, please change the root <code>CMakeLists.txt</code> file
+to reflect this.</p>
+
+<h1>
+<a id="c11-code" class="anchor" href="#c11-code" aria-hidden="true"><span class="octicon octicon-link"></span></a>C++11 code</h1>
+
+<p>The two most interesting C++11 source files in this example are <code>MicroCore.cpp</code> and <code>main.cpp</code>. Therefore, I will focus on them here.
+Full source code is on github.</p>
+
+<h2>
+<a id="microcorecpp" class="anchor" href="#microcorecpp" aria-hidden="true"><span class="octicon octicon-link"></span></a>MicroCore.cpp</h2>
+
+<p><code>MicroCore</code> class is a micro version of <a href="https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.h">cryptonode::core</a> class. The core class is the main
+class with the access to the blockchain that the monero daemon is using. In the <code>cryptonode::core</code> class, the most important method (at least for this example), is the <a href="https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.cpp#L206">init</a> method. The main goal of the <code>init</code> function
+is to create instance of <a href="https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/blockchain.h">Blockchain</a> class. The <code>Blockchain</code> is the high level interface to blockchain. The low level one is through <code>BlockchainLMDB</code> in our case, which
+can also be accessed through <code>Blockchain</code> object.</p>
+
+<p>The original class does a lot of things, which we dont need here, such as reading program options, checking
+file</p>
+
+<div class="highlight highlight-source-c++"><pre>#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">"</span>MicroCore.h<span class="pl-pds">"</span></span>
+
+<span class="pl-k">namespace</span> <span class="pl-en">xmreg</span>
+{
+    <span class="pl-c">/**</span>
+<span class="pl-c">     * The constructor is interesting, as</span>
+<span class="pl-c">     * m_mempool and m_blockchain_storage depend</span>
+<span class="pl-c">     * on each other.</span>
+<span class="pl-c">     *</span>
+<span class="pl-c">     * So basically m_mempool initialized with</span>
+<span class="pl-c">     * reference to Blockchain (i.e., Blockchain&amp;)</span>
+<span class="pl-c">     * and m_blockchain_storage is initialized with</span>
+<span class="pl-c">     * reference to m_mempool (i.e., tx_memory_pool&amp;)</span>
+<span class="pl-c">     *</span>
+<span class="pl-c">     * The same is done in cryptonode::core.</span>
+<span class="pl-c">     */</span>
+    <span class="pl-en">MicroCore::MicroCore</span>():
+            <span class="pl-en">m_mempool</span>(m_blockchain_storage),
+            <span class="pl-en">m_blockchain_storage</span>(m_mempool)
+    {}
+
+
+    <span class="pl-c">/**</span>
+<span class="pl-c">     * Initialized the MicroCore object.</span>
+<span class="pl-c">     *</span>
+<span class="pl-c">     * Create BlockchainLMDB on the heap.</span>
+<span class="pl-c">     * Open database files located in blockchain_path.</span>
+<span class="pl-c">     * Initialize m_blockchain_storage with the BlockchainLMDB object.</span>
+<span class="pl-c">     */</span>
+    <span class="pl-k">bool</span>
+    <span class="pl-en">MicroCore::init</span>(<span class="pl-k">const</span> string&amp; blockchain_path)
+    {
+        <span class="pl-k">int</span> db_flags = <span class="pl-c1">0</span>;
+
+        <span class="pl-c">// MDB_RDONLY will result in</span>
+        <span class="pl-c">// m_blockchain_storage.deinit() producing</span>
+        <span class="pl-c">// error messages.</span>
+
+        <span class="pl-c">//db_flags |= MDB_RDONLY ;</span>
+
+        db_flags |= MDB_NOSYNC;
+
+        BlockchainDB* db = <span class="pl-v">nullptr</span>;
+        db = <span class="pl-k">new</span> <span class="pl-c1">BlockchainLMDB</span>();
+
+        <span class="pl-k">try</span>
+        {
+            db-&gt;<span class="pl-c1">open</span>(blockchain_path, db_flags);
+        }
+        <span class="pl-k">catch</span> (<span class="pl-k">const</span> std::exception&amp; e)
+        {
+            cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Error opening database: <span class="pl-pds">"</span></span> &lt;&lt; e.<span class="pl-c1">what</span>();
+            <span class="pl-k">return</span> <span class="pl-c1">false</span>;
+        }
+
+        <span class="pl-k">if</span>(!db-&gt;<span class="pl-c1">is_open</span>())
+        {
+            <span class="pl-k">return</span> <span class="pl-c1">false</span>;
+        }
+
+        <span class="pl-k">return</span> m_blockchain_storage.<span class="pl-c1">init</span>(db, <span class="pl-c1">false</span>);
+    }
+
+    <span class="pl-c">/**</span>
+<span class="pl-c">    * Get m_blockchain_storage.</span>
+<span class="pl-c">    * Initialize m_blockchain_storage with the BlockchainLMDB object.</span>
+<span class="pl-c">    */</span>
+    Blockchain&amp;
+    <span class="pl-en">MicroCore::get_core</span>()
+    {
+        <span class="pl-k">return</span> m_blockchain_storage;
+    }
+
+
+    <span class="pl-c">/**</span>
+<span class="pl-c">     * De-initialized Blockchain.</span>
+<span class="pl-c">     *</span>
+<span class="pl-c">     * Its needed to mainly deallocate</span>
+<span class="pl-c">     * new BlockchainDB object</span>
+<span class="pl-c">     * created in the MicroCore::init().</span>
+<span class="pl-c">     *</span>
+<span class="pl-c">     * It also tries to synchronize the blockchain.</span>
+<span class="pl-c">     * And this is the reason when, if MDB_RDONLY</span>
+<span class="pl-c">     * is set, we are getting error messages. Because</span>
+<span class="pl-c">     * blockchain is readonly and we try to synchronize it.</span>
+<span class="pl-c">     */</span>
+    <span class="pl-en">MicroCore::~MicroCore</span>()
+    {
+        m_blockchain_storage.<span class="pl-c1">deinit</span>();
+    }
+
+}</pre></div>
+
+<h2>
+<a id="maincpp" class="anchor" href="#maincpp" aria-hidden="true"><span class="octicon octicon-link"></span></a>main.cpp</h2>
+
+<div class="highlight highlight-source-c++"><pre>
+#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">"</span>src/MicroCore.h<span class="pl-pds">"</span></span>
+#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">"</span>src/tools.h<span class="pl-pds">"</span></span>
+
+
+<span class="pl-k">using</span> <span class="pl-k">namespace</span> <span class="pl-en">std</span><span class="pl-k">;</span>
+
+<span class="pl-k">unsigned</span> <span class="pl-k">int</span> epee::g_test_dbg_lock_sleep = <span class="pl-c1">0</span>;
+
+<span class="pl-k">int</span> <span class="pl-en">main</span>() {
+
+    <span class="pl-c">// enable basic monero log output</span>
+    <span class="pl-c1">uint32_t</span> log_level = <span class="pl-c1">0</span>;
+    <span class="pl-c1">epee::log_space::get_set_log_detalisation_level</span>(<span class="pl-c1">true</span>, log_level);
+    <span class="pl-c1">epee::log_space::log_singletone::add_logger</span>(LOGGER_CONSOLE, <span class="pl-c1">NULL</span>, <span class="pl-c1">NULL</span>); <span class="pl-c">//LOGGER_NULL</span>
+
+    <span class="pl-c">// location of the lmdb blockchain</span>
+    string blockchain_path {<span class="pl-s"><span class="pl-pds">"</span>/home/mwo/.bitmonero/lmdb<span class="pl-pds">"</span></span>};
+
+    <span class="pl-c">// input data: public address, private view key and tx hash</span>
+    <span class="pl-c">// they are hardcoded here, as I dont want to unnecessary</span>
+    <span class="pl-c">// bloat the code with parsing input arguments</span>
+    string address_str {<span class="pl-s"><span class="pl-pds">"</span>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU<span class="pl-pds">"</span></span>};
+    string viewkey_str {<span class="pl-s"><span class="pl-pds">"</span>1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a<span class="pl-pds">"</span></span>};
+    string tx_hash_str {<span class="pl-s"><span class="pl-pds">"</span>66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577<span class="pl-pds">"</span></span>};
+
+
+    <span class="pl-c">// our micro cryptonote core</span>
+    xmreg::MicroCore mcore;
+
+    <span class="pl-k">if</span> (!mcore.<span class="pl-c1">init</span>(blockchain_path))
+    {
+        cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Error accessing blockchain.<span class="pl-pds">"</span></span> &lt;&lt; endl;
+        <span class="pl-k">return</span> <span class="pl-c1">1</span>;
+    }
+
+    <span class="pl-c">// get the high level cryptonote::Blockchain object to interact</span>
+    <span class="pl-c">// with the blockchain lmdb database</span>
+    cryptonote::Blockchain&amp; core_storage = mcore.<span class="pl-c1">get_core</span>();
+
+    <span class="pl-c">// get the current blockchain height. Just to check</span>
+    <span class="pl-c">// if it reads ok.</span>
+    <span class="pl-c1">uint64_t</span> height = core_storage.<span class="pl-c1">get_current_blockchain_height</span>();
+
+    cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Current blockchain height: <span class="pl-pds">"</span></span> &lt;&lt; height &lt;&lt; endl;
+
+
+
+    <span class="pl-c">// parse string representing of monero address</span>
+    cryptonote::account_public_address address;
+
+    <span class="pl-k">if</span> (!<span class="pl-c1">xmreg::parse_str_address</span>(address_str,  address))
+    {
+        cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Cant parse string address: <span class="pl-pds">"</span></span> &lt;&lt; address_str &lt;&lt; endl;
+        <span class="pl-k">return</span> <span class="pl-c1">1</span>;
+    }
+
+
+    <span class="pl-c">// parse string representing of our private viewkey</span>
+    crypto::secret_key prv_view_key;
+    <span class="pl-k">if</span> (!<span class="pl-c1">xmreg::parse_str_secret_key</span>(viewkey_str, prv_view_key))
+    {
+        cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Cant parse view key: <span class="pl-pds">"</span></span> &lt;&lt; viewkey_str &lt;&lt; endl;
+        <span class="pl-k">return</span> <span class="pl-c1">1</span>;
+    }
+
+
+    <span class="pl-c">// we also need tx public key, rather than tx hash.</span>
+    <span class="pl-c">// to get it first, we obtained transaction object tx</span>
+    <span class="pl-c">// and then we get its public key from tx's extras.</span>
+    cryptonote::transaction tx;
+
+    <span class="pl-k">if</span> (!<span class="pl-c1">xmreg::get_tx_pub_key_from_str_hash</span>(core_storage, tx_hash_str, tx))
+    {
+        cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Cant find transaction with hash: <span class="pl-pds">"</span></span> &lt;&lt; tx_hash_str &lt;&lt; endl;
+        <span class="pl-k">return</span> <span class="pl-c1">1</span>;
+    }
+
+
+    crypto::public_key pub_tx_key = <span class="pl-c1">cryptonote::get_tx_pub_key_from_extra</span>(tx);
+
+    <span class="pl-k">if</span> (pub_tx_key == cryptonote::null_pkey)
+    {
+        cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Cant get public key of tx with hash: <span class="pl-pds">"</span></span> &lt;&lt; tx_hash_str &lt;&lt; endl;
+        <span class="pl-k">return</span> <span class="pl-c1">1</span>;
+    }
+
+
+    <span class="pl-c">// public transaction key is combined with our view key</span>
+    <span class="pl-c">// to get so called, derived key.</span>
+    crypto::key_derivation derivation;
+
+    <span class="pl-k">if</span> (!<span class="pl-c1">generate_key_derivation</span>(pub_tx_key, prv_view_key, derivation))
+    {
+        cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Cant get dervied key for: <span class="pl-pds">"</span></span> &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
+             &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>pub_tx_key: <span class="pl-pds">"</span></span> &lt;&lt; prv_view_key &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span> and <span class="pl-pds">"</span></span>
+             &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>prv_view_key<span class="pl-pds">"</span></span> &lt;&lt; prv_view_key &lt;&lt; endl;
+        <span class="pl-k">return</span> <span class="pl-c1">1</span>;
+    }
+
+
+    <span class="pl-c">// lets check our keys</span>
+    cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
+         &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>address          : &lt;<span class="pl-pds">"</span></span> &lt;&lt; <span class="pl-c1">xmreg::print_address</span>(address) &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>&gt;<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
+         &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>private view key : <span class="pl-pds">"</span></span>  &lt;&lt; prv_view_key &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
+         &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>tx hash          : &lt;<span class="pl-pds">"</span></span> &lt;&lt; tx_hash_str &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>&gt;<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
+         &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>public tx key    : <span class="pl-pds">"</span></span>  &lt;&lt; pub_tx_key &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
+         &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>dervied key      : <span class="pl-pds">"</span></span>  &lt;&lt; derivation &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span> &lt;&lt; endl;
+
+
+    <span class="pl-c">// each tx that we (or the adddress we are checking) received</span>
+    <span class="pl-c">// contains a number of outputs.</span>
+    <span class="pl-c">// some of them are ours, some not. so we need to go through</span>
+    <span class="pl-c">// all of them in a given tx block, to check with outputs are ours.</span>
+
+    <span class="pl-c">// get the total number of outputs in a transaction.</span>
+    <span class="pl-c1">size_t</span> output_no = tx.<span class="pl-smi">vout</span>.<span class="pl-c1">size</span>();
+
+    <span class="pl-c">// sum amount of xmr sent to us</span>
+    <span class="pl-c">// in the given transaction</span>
+    <span class="pl-c1">uint64_t</span> money_transfered {<span class="pl-c1">0</span>};
+
+    <span class="pl-c">// loop through outputs in the given tx</span>
+    <span class="pl-c">// to check which outputs our ours, we compare outputs</span>
+    <span class="pl-c">// public keys, with the public key that would had been</span>
+    <span class="pl-c">// generated for us.</span>
+    <span class="pl-k">for</span> (<span class="pl-c1">size_t</span> i = <span class="pl-c1">0</span>; i &lt; output_no; ++i)
+    {
+        <span class="pl-c">// get the tx output public key</span>
+        <span class="pl-c">// that normally would be generated for us,</span>
+        <span class="pl-c">// if someone send us some xrm</span>
+        crypto::public_key pubkey;
+
+        <span class="pl-c1">crypto::derive_public_key</span>(derivation,
+                                  i,
+                                  address.<span class="pl-smi">m_spend_public_key</span>,
+                                  pubkey);
+
+
+        <span class="pl-c">// get tx output public key</span>
+        <span class="pl-k">const</span> cryptonote::txout_to_key tx_out_to_key
+                = boost::get&lt;cryptonote::txout_to_key&gt;(tx.<span class="pl-smi">vout</span>[i].<span class="pl-smi">target</span>);
+
+
+        cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Output no: <span class="pl-pds">"</span></span> &lt;&lt; i &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>, <span class="pl-pds">"</span></span> &lt;&lt; tx_out_to_key.<span class="pl-smi">key</span>;
+
+        <span class="pl-c">// check if the output's public key is ours</span>
+        <span class="pl-k">if</span> (tx_out_to_key.<span class="pl-smi">key</span> == pubkey)
+        {
+            <span class="pl-c">// if so, than add the xmr amount to the money_transfered</span>
+            money_transfered += tx.<span class="pl-smi">vout</span>[i].<span class="pl-smi">amount</span>;
+            cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>, mine key: <span class="pl-pds">"</span></span> &lt;&lt; <span class="pl-c1">cryptonote::print_money</span>(tx.<span class="pl-smi">vout</span>[i].<span class="pl-smi">amount</span>) &lt;&lt; endl;
+        }
+        <span class="pl-k">else</span>
+        {
+            cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>, not mine key <span class="pl-pds">"</span></span> &lt;&lt; endl;
+        }
+
+    }
+
+    cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span>Total xmr received: <span class="pl-pds">"</span></span> &lt;&lt; <span class="pl-c1">cryptonote::print_money</span>(money_transfered) &lt;&lt; endl;
+
+
+    cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span>End of program.<span class="pl-pds">"</span></span> &lt;&lt; endl;
+
+    <span class="pl-k">return</span> <span class="pl-c1">0</span>;
+}</pre></div>
+
+<h1>
+<a id="output" class="anchor" href="#output" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output</h1>
+
+<p>The main output is as follows:</p>
+
+<div class="highlight highlight-source-shell"><pre>address          <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU<span class="pl-k">&gt;</span>
+private view key <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a<span class="pl-k">&gt;</span>
+tx <span class="pl-c1">hash</span>          <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e<span class="pl-k">30577&gt;</span>
+public tx key    <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>0851f2ec7477b82618e028238164a9080325fe299dcf5f70f868729b50d<span class="pl-k">00284&gt;</span>
+dervied key      <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>8017f9944635b7b2e4dc2ddb9b81787e49b384dcb2abd474355fe62bee79fdd<span class="pl-k">7&gt;</span>
+
+Output no: 0, <span class="pl-k">&lt;</span>c65ee61d95480988c1fd70f6078afafd4d90ef730fc3c4df59951d64136e911f<span class="pl-k">&gt;</span>, not mine key
+Output no: 1, <span class="pl-k">&lt;</span>67a5fd7e06640942f0d869e494fc9d297d5087609013cd3531d0da55de19045b<span class="pl-k">&gt;</span>, not mine key
+Output no: 2, <span class="pl-k">&lt;</span>a9e0f19422e68ed328315e92373388a3ebb418204a36d639bd1f2e870f4bc<span class="pl-k">919&gt;</span>, mine key: 0.800000000000
+Output no: 3, <span class="pl-k">&lt;</span>849b56538f199f0a7522fcd0b132e53eec4a822e9b70b0e7e6c9e2632f1328db<span class="pl-k">&gt;</span>, mine key: 4.000000000000
+Output no: 4, <span class="pl-k">&lt;</span>aba2e362f8ae0d79a4f33f9e4e27eecf79ad9c53eae86c27aa0281fb29aa6fdc<span class="pl-k">&gt;</span>, not mine key
+Output no: 5, <span class="pl-k">&lt;</span>2602e4ac211216571ab1afe631aae1f905f252a1150cb8c4e5f34b820d0d6b4a<span class="pl-k">&gt;</span>, not mine key
+
+Total xmr received: 4.800000000000</pre></div>
+
+<p>These results agree with those obtained using <a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a>.</p>
+
+<h2>
+<a id="how-can-you-help" class="anchor" href="#how-can-you-help" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can you help?</h2>
+
+<p>Constructive criticism, code and website edits are always good. They can be made through github.</p>
+
+<p>Some Monero are also welcome:</p>
+
+<pre><code>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU
+</code></pre>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/moneroexamples/access-blockchain-in-cpp">Monero Examples</a> is maintained by <a href="https://github.com/moneroexamples">moneroexamples</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
