@@ -1,4 +1,4 @@
-# access-blockchain-in-cpp
+# Access blockchain information using C++
 
 How to develop on top of monero? One way is to use josn-rpc calls from
 any language capable of this, for example, as
