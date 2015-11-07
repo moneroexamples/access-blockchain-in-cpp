@@ -283,12 +283,20 @@ int main(int ac, const char* av[]) {
     auto bc_path_opt = opts.get_option<string>("bc-path");
 
 
+    // default path to monero folder
+    // on linux this is /home/<username>/.bitmonero
+    string default_monero_dir = tools::get_default_data_dir();
+
+    // the default folder of the lmdb blockchain database
+    // is therefore as follows
+    string default_lmdb_dir   = default_monero_dir + "/lmdb";
+
     // get the program command line options, or
     // some default values for quick check
     string address_str = address_opt ? *address_opt : "48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU";
     string viewkey_str = viewkey_opt ? *viewkey_opt : "1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a";
     string tx_hash_str = tx_hash_opt ? *tx_hash_opt : "66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577";
-    path blockchain_path = bc_path_opt ? path(*bc_path_opt) : path("/home/mwo/.bitmonero/lmdb");
+    path blockchain_path = bc_path_opt ? path(*bc_path_opt) : path(default_lmdb_dir);
 
     if (!is_directory(blockchain_path))
     {
@@ -563,11 +571,6 @@ git clone https://github.com/moneroexamples/access-blockchain-in-cpp.git
 
 # enter the downloaded sourced code folder
 cd access-blockchain-in-cpp
-
-# you can edit main.cpp and change the hard coded default
-# database location. If not, you have to provide path to
-# the blockchain using --bc-path option, for example,
-# ./xmreg01 --bc-path ~/.bitmonero/lmdb
 
 # create the makefile
 cmake .
