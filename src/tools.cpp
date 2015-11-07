@@ -96,4 +96,39 @@ namespace xmreg
         return get_account_address_as_str(false, address);
     }
 
+
+
+    /**
+     * Check if a character is a path seprator
+     */
+    inline bool
+    is_separator(char c)
+    {
+        // default linux path separator
+        const char separator = PATH_SEPARARTOR;
+
+        return c == separator;
+    }
+
+
+
+    /**
+     * Remove trailinig path separator.
+     */
+    string
+    remove_trailing_path_separator(const string& in_path)
+    {
+        string new_string = in_path;
+        if (!new_string.empty() && is_separator(new_string[new_string.size() - 1]))
+            new_string.erase(new_string.size() - 1);
+        return new_string;
+    }
+
+    bf::path
+    remove_trailing_path_separator(const bf::path& in_path)
+    {
+        string path_str = in_path.native();
+        return bf::path(remove_trailing_path_separator(path_str));
+    }
+
 }

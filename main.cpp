@@ -51,6 +51,7 @@ int main(int ac, const char* av[]) {
     string tx_hash_str = tx_hash_opt ? *tx_hash_opt : "66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577";
     path blockchain_path = bc_path_opt ? path(*bc_path_opt) : path(default_lmdb_dir);
 
+
     if (!is_directory(blockchain_path))
     {
         cerr << "Given path \"" << blockchain_path   << "\" "
@@ -59,7 +60,9 @@ int main(int ac, const char* av[]) {
         return 1;
     }
 
-    blockchain_path.remove_trailing_separator();
+    blockchain_path = xmreg::remove_trailing_path_separator(blockchain_path);
+
+    cout << "Blockchain path: " << blockchain_path << endl;
 
     // enable basic monero log output
     uint32_t log_level = 0;

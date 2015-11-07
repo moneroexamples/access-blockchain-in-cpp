@@ -5,9 +5,14 @@
 #ifndef XMREG01_TOOLS_H
 #define XMREG01_TOOLS_H
 
+#define PATH_SEPARARTOR '/'
+
 #include <string>
 
 #include "monero_headers.h"
+
+#include <boost/filesystem.hpp>
+
 
 /**
  * Some helper functions used in the example.
@@ -18,6 +23,8 @@ namespace xmreg
 {
     using namespace cryptonote;
     using namespace std;
+
+    namespace bf = boost::filesystem;
 
     template <typename T>
     bool
@@ -34,8 +41,19 @@ namespace xmreg
                       account_public_address& address);
 
 
+    inline bool
+    is_separator(char c);
+
     string
     print_address(const account_public_address& address);
+
+
+    string
+    remove_trailing_path_separator(const string& in_path);
+
+    bf::path
+    remove_trailing_path_separator(const bf::path& in_path);
+
 
 }
 
