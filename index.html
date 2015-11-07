@@ -567,6 +567,33 @@ Output no: 4, <span class="pl-k">&lt;</span>1ba3063bd57752537ca7ccd47ff2c0a72b7d
 Total xmr received: 9.120000000000</pre></div>
 
 <h2>
+<a id="compile-this-example" class="anchor" href="#compile-this-example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Compile this example</h2>
+
+<p>The dependencies are same as those for Monero, so I assume Monero compiles
+correctly. If so then to download and compile this example, the following
+steps can be executed:</p>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"># download the source code</span>
+git clone https://github.com/moneroexamples/access-blockchain-in-cpp.git
+
+<span class="pl-c"># enter the downloaded sourced code folder</span>
+<span class="pl-c1">cd</span> access-blockchain-in-cpp
+
+<span class="pl-c"># you can edit main.cpp and change the hard coded default</span>
+<span class="pl-c"># database location. If not, you have to provide path to</span>
+<span class="pl-c"># the blockchain using --bc-path option, for example,</span>
+<span class="pl-c"># ./xmreg01 --bc-path ~/.bitmonero/lmdb</span>
+
+<span class="pl-c"># create the makefile</span>
+cmake <span class="pl-c1">.</span>
+
+<span class="pl-c"># compile</span>
+make</pre></div>
+
+<p>After this, <code>xmreg01</code> executable file should be present in access-blockchain-in-cpp
+folder. How to use it, can be seen in the above example outputs.</p>
+
+<h2>
 <a id="how-can-you-help" class="anchor" href="#how-can-you-help" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can you help?</h2>
 
 <p>Constructive criticism, code and website edits are always good. They can be made through github.</p>
@@ -575,35 +602,6 @@ Total xmr received: 9.120000000000</pre></div>
 
 <pre><code>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU
 </code></pre>
-
-
-
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    
-    var disqus_config = function () {
-        this.page.url = 'https://moneroexamples.github.io/access-blockchain-in-cpp/'; 
-        this.page.identifier = 'access-blockchain-using-c++'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-    };
-    
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
-        
-        s.src = '//moneroexamples.disqus.com/embed.js';
-        
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
-
-
-
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/moneroexamples/access-blockchain-in-cpp">Monero Examples</a> is maintained by <a href="https://github.com/moneroexamples">moneroexamples</a>.</span>
