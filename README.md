@@ -494,6 +494,8 @@ Output no: 5, <e1956d1077a9e5310c22a6a103e32f25def9aab4a7214894ed30a76d18cde271>
 Total xmr received: 9.180000000000
 ```
 
+These results agree also with those obtained using [XMR test](http://xmrtests.llcoins.net/checktx.html).
+
 #Output example 3
 Executing the program as follows:
 ```bash
@@ -542,7 +544,7 @@ Output no: 4, <1ba3063bd57752537ca7ccd47ff2c0a72b7dcd8d8510fc222737636f208174cc>
 
 Total xmr received: 9.120000000000
 ```
-
+These results agree also with those obtained using [XMR test](http://xmrtests.llcoins.net/checktx.html).
 
 ## Compile this example
 The dependencies are same as those for Monero, so I assume Monero compiles
