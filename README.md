@@ -1,20 +1,23 @@
 # Access blockchain information using C++
 
-How to develop on top of Monero? One way is to use json-rpc calls from
+How to develop on top of [Monero](https://getmonero.org/)? One way is to use json-rpc calls from
 any language capable of this, for example, as
 [shown in python](http://moneroexamples.github.io/python-json-rpc/). Another way
-is to use pubilc api of existing monero services such as
+is to use pubilc api of existing Monero services such as
  [moneroblocks](http://moneroblocks.eu/api). Some Monero functions are even
- avaliable in js if you look at the source code of [mymonero.com](https://mymonero.com/#/)
- which allows to develop some web applications with only html and js, such as,
+ avaliable in JavaScript if you look at the source code of [mymonero.com](https://mymonero.com/#/).
+ This  allows to develop some web applications with only HTML and JavaScript, such as,
 [XMR test](http://xmrtests.llcoins.net/checktx.html).
 
-The other way, presented here, is to directly tap into monero C++ libraries
-to do something useful. However, there are no tutorials or any information how to do it.
+The other way, presented here, is to directly tap into Monero C++ libraries.
+However, there are no tutorials or any information how to do it.
 
-For this reason this example was created. To shows how access Monero C++ libraries
-and do something with them. I don't know if this is the correct way of doing
-this, but it seems to be working.
+For this reason this example was created, i.e.,  to show how to access Monero C++ libraries
+and do something with them.
+
+Small disclaimer: I don't know if this is the correct way of doing
+this, but it seems to be working. If something is done in a stupid or wrong way,
+or my explanations in the comments are incorrect, please let me know.
 
 # Objective
 There's been a lot of talk in Monero about viewkeys. But how do you actually use them?
