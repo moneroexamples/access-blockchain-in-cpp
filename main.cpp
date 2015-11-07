@@ -12,7 +12,6 @@ unsigned int epee::g_test_dbg_lock_sleep = 0;
 
 int main(int ac, const char* av[]) {
 
-
     // get command line options
     xmreg::CmdLineOptions opts {ac, av};
 
@@ -28,16 +27,21 @@ int main(int ac, const char* av[]) {
     auto address_opt = opts.get_option<string>("address");
     auto viewkey_opt = opts.get_option<string>("viewkey");
     auto tx_hash_opt = opts.get_option<string>("txhash");
-    auto bc_path_opt = opts.get_option<string>("blockchain_path");
+    auto bc_path_opt = opts.get_option<string>("bc-path");
 
 
-
+    // get the program command line options, or
+    // some default values for quick check
     string address_str = address_opt ? *address_opt : "48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU";
     string viewkey_str = viewkey_opt ? *viewkey_opt : "1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a";
     string tx_hash_str = tx_hash_opt ? *tx_hash_opt : "66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577";
     string blockchain_path = bc_path_opt ? *bc_path_opt : "/home/mwo/.bitmonero/lmdb";
 
-
+    if (!boost::filesystem::exists(blockchain_path))
+    {
+        cerr << "Folder does not exist: " << blockchain_path << endl;
+        return 0;
+    }
 
     // enable basic monero log output
     uint32_t log_level = 0;
@@ -45,9 +49,7 @@ int main(int ac, const char* av[]) {
     epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL);
 
 
-
-
-    // our micro cryptonote core
+    // create instance of our MicroCore
     xmreg::MicroCore mcore;
 
     if (!mcore.init(blockchain_path))
@@ -65,7 +67,6 @@ int main(int ac, const char* av[]) {
     uint64_t height = core_storage.get_current_blockchain_height();
 
     cout << "Current blockchain height: " << height << endl;
-
 
 
     // parse string representing of monero address
@@ -158,7 +159,6 @@ int main(int ac, const char* av[]) {
                                   address.m_spend_public_key,
                                   pubkey);
 
-
         // get tx output public key
         const cryptonote::txout_to_key tx_out_to_key
                 = boost::get<cryptonote::txout_to_key>(tx.vout[i].target);
@@ -177,7 +177,6 @@ int main(int ac, const char* av[]) {
         {
             cout << ", not mine key " << endl;
         }
-
     }
 
     cout << "\nTotal xmr received: " << cryptonote::print_money(money_transfered) << endl;

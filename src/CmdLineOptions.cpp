@@ -23,8 +23,8 @@ namespace xmreg
                  "private view key string")
                 ("txhash,t", value<string>(),
                  "public transaction hash")
-                ("blockchain-path,b", value<string>(),
-                 "location of lmdb blockchains");
+                ("bc-path,b", value<string>(),
+                 "path to lmdb blockchain");
 
 
         store(command_line_parser(acc, avv)
@@ -35,7 +35,8 @@ namespace xmreg
 
         if (vm.count("help"))
         {
-            cout << desc << "\n";
+            if (vm["help"].as<bool>())
+                cout << desc << "\n";
         }
     }
 
