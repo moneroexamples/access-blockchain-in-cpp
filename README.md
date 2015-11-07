@@ -22,16 +22,17 @@ or my explanations in the comments are incorrect, please let me know.
 # Objective
 There's been a lot of talk in Monero about viewkeys. But how do you actually use them?
 Well, they can be used to to check which transaction's outputs in a given block belong to a given
-address. Without the private viewkey of associated with the given Monero address it is not
-possible to check check how much xmr there are in that address. The same if we know that
-a given transaction was sent to the given address, it is not possible to check which
-outputs of that transaction actually are meant to belong to the address without
-viewkey of that address. The viewkey allows to filter out outputs not not bind to the address.
+address. Without the private viewkey associated with the given Monero address, it is not
+possible to check how much Monero there are in that address. The same, if we know that
+a given transaction was sent to a specific address, it is not possible to check
+in a blockchain which outputs of that transaction actually were meant to belong to that address without
+the private viewkey of that address. The viewkey allows to filter out outputs not bind to the address.
 
-This is already possible using
- [XMR test](http://xmrtests.llcoins.net/checktx.html) website. And this is good,
- since it allows us to very results obtained using this example with those
- provided by XMR test website.
+Checking if any of a transaction's outputs are belong to a given address
+with the private viewkey of that address is already possible using
+ [XMR test](http://xmrtests.llcoins.net/checktx.html) website. This is very good,
+ since it allows us to very the results obtained using this example with those
+ provided by that website.
 
 
 # Pre-requsits
@@ -70,12 +71,12 @@ make # or make -j number_of_threads, e.g., make -j 2
 ```
 
 ## Monero static libraries
-When the compilation finishes, bunch of static Monero libraries
-should be generated. We will need to link against.
+When the compilation finishes, a number of static Monero libraries
+should be generated. We will need them to link against.
 
-They will be spread around different subfolders of the `./build/` folder.
-So it is easier to just copy them into one folder. I assume that
- `/opt/bitmonero-dev/libs` will be our folder where we are going to keep them.
+Since they are spread around different subfolders of the `./build/` folder,
+it is easier to just copy them into one folder. I assume that
+ `/opt/bitmonero-dev/libs` is the folder where they are going to be copied to.
 
 ```bash
 # create the folder
@@ -90,8 +91,9 @@ sudo find ./build/ -name '*.a' -exec cp {} /opt/bitmonero-dev/libs  \;
 
 ## Monero headers
 
-Now we need to get headers, as this is our interface to the
-monero libraries.
+Now we need to get Monero headers, as this is our interface to the
+Monero libraries. Folder `/opt/bitmonero-dev/headers` is assumed
+to hold the headers.
 
 ```bash
 # create the folder
@@ -105,27 +107,31 @@ sudo rsync -zarv --include="*/" --include="*.h" --exclude="*" --prune-empty-dirs
  ```
 
 ## cmake confing files
-`CMakeLists.txt` files and the structure of this project are can be studied at github. I wont be discussing them
+`CMakeLists.txt` files and the structure of this project can be checked at
+[github](https://github.com/moneroexamples/access-blockchain-in-cpp).
+I wont be discussing them
 here. I tried to put comments in `CMakeLists.txt` to clarify what is there.
 
 The location of the Monero's headers and static libraries must be correctly
-indicated in  `CMakeLists.txt`. So if you put them in different folder
+indicated in `CMakeLists.txt`. So if you place them in different folders
 that in this example, please change the root `CMakeLists.txt` file
-to reflect this.
+accordingly.
 
-# C++11 code
-The two most interesting C++11 source files in this example are `MicroCore.cpp` and `main.cpp`. Therefore, I will focus on them here.
-Full source code is on github.
+# C++ code
+The two most interesting C++ source files in this example are `MicroCore.cpp` and `main.cpp`.
+Therefore, I will present only these to files here. Full source code is
+at [github](https://github.com/moneroexamples/access-blockchain-in-cpp).
 
 ## MicroCore.cpp
 
 `MicroCore` class is a micro version of [cryptonode::core](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.h) class. The core class is the main
-class with the access to the blockchain that the monero daemon is using. In the `cryptonode::core` class, the most important method (at least for this example), is the [init](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.cpp#L206) method. The main goal of the `init` function
-is to create instance of [Blockchain](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/blockchain.h) class. The `Blockchain` is the high level interface to blockchain. The low level one is through `BlockchainLMDB` in our case, which
-can also be accessed through `Blockchain` object.
+class with the access to the blockchain that the Monero daemon is using.
+In the `cryptonode::core` class, the most important method (at least for this example), is the [init](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.cpp#L206) method. The main goal of the `init` method
+is to create an instance of [Blockchain](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/blockchain.h) class. The `Blockchain` is the high level interface to blockchain database. The low level one is through `BlockchainLMDB` in our case, which
+can also be accessed through the `Blockchain` object.
 
-The original class does a lot of things, which we dont need here, such as reading program options, checking
-file
+The original class does a lot of things, which we don't need here, such as reading program options. Thus its
+micro version was prepared for this example.
 
 ```c++
 #include "MicroCore.h"
@@ -227,6 +233,16 @@ namespace xmreg
 ```
 
 ## main.cpp
+This is the main file of the example. For the program to work, four
+input values are required:
+
+ - `address` - Monero adress.
+ - `viewkey` - private view key associated with the address provided.
+ - `txhash`  - transaction id (i.e., hash) which outputs we want to check.
+ - `bc-path` - a path to lmdb folder with the blockchain.
+
+To run the program, at least correct `bc-path` is required. All other
+options have default values which work.
 
 ```c++
 #include <iostream>
