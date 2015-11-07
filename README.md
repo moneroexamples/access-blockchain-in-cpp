@@ -1,23 +1,34 @@
 # Access blockchain information using C++
 
-How to develop on top of monero? One way is to use josn-rpc calls from
+How to develop on top of Monero? One way is to use json-rpc calls from
 any language capable of this, for example, as
 [shown in python](http://moneroexamples.github.io/python-json-rpc/). Another way
 is to use pubilc api of existing monero services such as
- [moneroblocks](http://moneroblocks.eu/api). These to approaches can be useful,
- but they have limitations in that they allow for only a fraction of what
- monero can do. The reason is that most functionality of monero is available
- through C++11 libraries. Those can be difficult to navigate and use.
+ [moneroblocks](http://moneroblocks.eu/api). Some Monero functions are even
+ avaliable in js if you look at the source code of [mymonero.com](https://mymonero.com/#/)
+ which allows to develop some web applications with only html and js, such as,
+[XMR test](http://xmrtests.llcoins.net/checktx.html).
 
-For this reason this example was created. To show can one can use c++ monero
-libraries to write something that uses the wealthy of monero libraries and tools.
+The other way, presented here, is to directly tap into monero C++ libraries
+to do something useful. However, there are no tutorials or any information how to do it.
+
+For this reason this example was created. To shows how access Monero C++ libraries
+and do something with them. I don't know if this is the correct way of doing
+this, but it seems to be working.
 
 # Objective
-To check which transaction's outputs in a given block belong to a given
-address. This is already possible using
+There's been a lot of talk in Monero about viewkeys. But how do you actually use them?
+Well, they can be used to to check which transaction's outputs in a given block belong to a given
+address. Without the private viewkey of associated with the given Monero address it is not
+possible to check check how much xmr there are in that address. The same if we know that
+a given transaction was sent to the given address, it is not possible to check which
+outputs of that transaction actually are meant to belong to the address without
+viewkey of that address. The viewkey allows to filter out outputs not not bind to the address.
+
+This is already possible using
  [XMR test](http://xmrtests.llcoins.net/checktx.html) website. And this is good,
- since it allows us to very results obtained this C++11 code with those
- provided by XMR test.
+ since it allows us to very results obtained using this example with those
+ provided by XMR test website.
 
 
 # Pre-requsits
@@ -25,8 +36,8 @@ address. This is already possible using
 Everthing here was done and tested on
 Ubuntu 14.04 x86_64 and Ubuntu 15.10 x86_64.
 
-For monero node is using `lmdbq`, thus I use this database only in this example.
-I could not test on `berkeleydb`, thus its not included here.
+Mine Monero node is using `lmdbq`, thus I use this database only in this example.
+I could not test on `berkeleydb`.
 
 ## Dependencies
 
@@ -56,7 +67,7 @@ make # or make -j number_of_threads, e.g., make -j 2
 ```
 
 ## Monero static libraries
-When the compilation finishes, bunch of static monero libraries
+When the compilation finishes, bunch of static Monero libraries
 should be generated. We will need to link against.
 
 They will be spread around different subfolders of the `./build/` folder.
