@@ -8,7 +8,11 @@
 
 using namespace std;
 
+// without this it wont work. I'm not sure what it does.
+// it has something to do with locking the blockchain and tx pool
+// during certain operations to avoid deadlocks.
 unsigned int epee::g_test_dbg_lock_sleep = 0;
+
 
 int main(int ac, const char* av[]) {
 
@@ -40,7 +44,7 @@ int main(int ac, const char* av[]) {
     if (!boost::filesystem::exists(blockchain_path))
     {
         cerr << "Folder does not exist: " << blockchain_path << endl;
-        return 0;
+        return 1;
     }
 
     // enable basic monero log output
@@ -52,13 +56,14 @@ int main(int ac, const char* av[]) {
     // create instance of our MicroCore
     xmreg::MicroCore mcore;
 
+    // initialize the core using the blockchain path
     if (!mcore.init(blockchain_path))
     {
         cerr << "Error accessing blockchain." << endl;
         return 1;
     }
 
-    // get the high level cryptonote::Blockchain object to interact
+    // get the highlevel cryptonote::Blockchain object to interact
     // with the blockchain lmdb database
     cryptonote::Blockchain& core_storage = mcore.get_core();
 
@@ -69,7 +74,7 @@ int main(int ac, const char* av[]) {
     cout << "Current blockchain height: " << height << endl;
 
 
-    // parse string representing of monero address
+    // parse string representing given monero address
     cryptonote::account_public_address address;
 
     if (!xmreg::parse_str_address(address_str,  address))
@@ -79,7 +84,7 @@ int main(int ac, const char* av[]) {
     }
 
 
-    // parse string representing of our private viewkey
+    // parse string representing of givenr private viewkey
     crypto::secret_key prv_view_key;
     if (!xmreg::parse_str_secret_key(viewkey_str, prv_view_key))
     {
@@ -88,8 +93,8 @@ int main(int ac, const char* av[]) {
     }
 
 
-    // we also need tx public key, rather than tx hash.
-    // to get it, first, we obtained transaction object tx
+    // we also need tx public key, but we have tx hash only.
+    // to get the key, first, we obtained transaction object tx
     // and then we get its public key from tx's extras.
     cryptonote::transaction tx;
 
@@ -109,8 +114,8 @@ int main(int ac, const char* av[]) {
     }
 
 
-    // public transaction key is combined with our view key
-    // to get so called, derived key.
+    // public transaction key is combined with our viewkey
+    // to create, so called, derived key.
     crypto::key_derivation derivation;
 
     if (!generate_key_derivation(pub_tx_key, prv_view_key, derivation))
@@ -131,10 +136,10 @@ int main(int ac, const char* av[]) {
          << "dervied key      : "  << derivation << "\n" << endl;
 
 
-    // each tx that we (or the adddress we are checking) received
+    // each tx that we (or the address we are checking) received
     // contains a number of outputs.
     // some of them are ours, some not. so we need to go through
-    // all of them in a given tx block, to check with outputs are ours.
+    // all of them in a given tx block, to check which outputs are ours.
 
     // get the total number of outputs in a transaction.
     size_t output_no = tx.vout.size();
@@ -145,13 +150,14 @@ int main(int ac, const char* av[]) {
 
     // loop through outputs in the given tx
     // to check which outputs our ours. we compare outputs'
-    // public keys, with the public key that would had been
+    // public keys with the public key that would had been
     // generated for us if we had gotten the outputs.
+    // not sure this is the case though, but that's my understanding.
     for (size_t i = 0; i < output_no; ++i)
     {
         // get the tx output public key
         // that normally would be generated for us,
-        // if someone had sent us some xmr
+        // if someone had sent us some xmr.
         crypto::public_key pubkey;
 
         crypto::derive_public_key(derivation,
