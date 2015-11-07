@@ -543,6 +543,7 @@ Output no: 4, <1ba3063bd57752537ca7ccd47ff2c0a72b7dcd8d8510fc222737636f208174cc>
 Total xmr received: 9.120000000000
 ```
 
+
 ## Compile this example
 The dependencies are same as those for Monero, so I assume Monero compiles
 correctly. If so then to download and compile this example, the following
@@ -550,11 +551,26 @@ steps can be executed:
 
 ```bash
 # download the source code
-git clone git@github.com:moneroexamples/access-blockchain-in-cpp.git
+git clone https://github.com/moneroexamples/access-blockchain-in-cpp.git
 
 # enter the downloaded sourced code folder
 cd access-blockchain-in-cpp
+
+# you can edit main.cpp and change the hard coded default
+# database location. If not, you have to provide path to
+# the blockchain using --bc-path option, for example,
+# ./xmreg01 --bc-path ~/.bitmonero/lmdb
+
+# create the makefile
+cmake .
+
+# compile
+make
 ```
+
+After this, `xmreg01` executable file should be present in access-blockchain-in-cpp
+folder. How to use it, can be seen in the above example outputs.
+
 
 ## How can you help?
 
