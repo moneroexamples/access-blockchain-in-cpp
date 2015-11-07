@@ -19,7 +19,8 @@ Small disclaimer: I don't know if this is the correct way of doing
 this, but it seems to be working. If something is done in a stupid or wrong way,
 or my explanations in the comments are incorrect, please let me know.
 
-# Objective
+# Aim: check which transaction's outputs belong to a given address
+
 There's been a lot of talk in Monero about viewkeys. But how do you actually use them?
 Well, they can be used to to check which transaction's outputs in a given block belong to a given
 address. Without the private viewkey associated with the given Monero address, it is not
@@ -28,7 +29,7 @@ a given transaction was sent to a specific address, it is not possible to check
 in a blockchain which outputs of that transaction actually were meant to belong to that address without
 the private viewkey of that address. The viewkey allows to filter out outputs not bind to the address.
 
-Checking if any of a transaction's outputs are belong to a given address
+Checking if any of a transaction's outputs belong to a given address
 with the private viewkey of that address is already possible using
  [XMR test](http://xmrtests.llcoins.net/checktx.html) website. This is very good,
  since it allows us to very the results obtained using this example with those
