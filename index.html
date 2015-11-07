@@ -283,6 +283,8 @@ options have default values which work.</p>
 
 
 <span class="pl-k">using</span> <span class="pl-k">namespace</span> <span class="pl-en">std</span><span class="pl-k">;</span>
+<span class="pl-k">using</span> boost::filesystem::path;
+<span class="pl-k">using</span> boost::filesystem::is_directory;
 
 <span class="pl-c">// without this it wont work. I'm not sure what it does.</span>
 <span class="pl-c">// it has something to do with locking the blockchain and tx pool</span>
@@ -310,18 +312,30 @@ options have default values which work.</p>
     <span class="pl-k">auto</span> bc_path_opt = opts.<span class="pl-smi">get_option</span>&lt;string&gt;(<span class="pl-s"><span class="pl-pds">"</span>bc-path<span class="pl-pds">"</span></span>);
 
 
+    <span class="pl-c">// default path to monero folder</span>
+    <span class="pl-c">// on linux this is /home/&lt;username&gt;/.bitmonero</span>
+    string default_monero_dir = <span class="pl-c1">tools::get_default_data_dir</span>();
+
+    <span class="pl-c">// the default folder of the lmdb blockchain database</span>
+    <span class="pl-c">// is therefore as follows</span>
+    string default_lmdb_dir   = default_monero_dir + <span class="pl-s"><span class="pl-pds">"</span>/lmdb<span class="pl-pds">"</span></span>;
+
     <span class="pl-c">// get the program command line options, or</span>
     <span class="pl-c">// some default values for quick check</span>
     string address_str = address_opt ? *address_opt : <span class="pl-s"><span class="pl-pds">"</span>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU<span class="pl-pds">"</span></span>;
     string viewkey_str = viewkey_opt ? *viewkey_opt : <span class="pl-s"><span class="pl-pds">"</span>1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a<span class="pl-pds">"</span></span>;
     string tx_hash_str = tx_hash_opt ? *tx_hash_opt : <span class="pl-s"><span class="pl-pds">"</span>66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577<span class="pl-pds">"</span></span>;
-    string blockchain_path = bc_path_opt ? *bc_path_opt : <span class="pl-s"><span class="pl-pds">"</span>/home/mwo/.bitmonero/lmdb<span class="pl-pds">"</span></span>;
+    path blockchain_path = bc_path_opt ? <span class="pl-c1">path</span>(*bc_path_opt) : <span class="pl-c1">path</span>(default_lmdb_dir);
 
-    <span class="pl-k">if</span> (!<span class="pl-c1">boost::filesystem::exists</span>(blockchain_path))
+    <span class="pl-k">if</span> (!<span class="pl-c1">is_directory</span>(blockchain_path))
     {
-        cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Folder does not exist: <span class="pl-pds">"</span></span> &lt;&lt; blockchain_path &lt;&lt; endl;
+        cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Given path <span class="pl-cce">\"</span><span class="pl-pds">"</span></span> &lt;&lt; blockchain_path   &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\"</span> <span class="pl-pds">"</span></span>
+             &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>is not a folder or does not exist<span class="pl-pds">"</span></span> &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span> <span class="pl-pds">"</span></span>
+             &lt;&lt; endl;
         <span class="pl-k">return</span> <span class="pl-c1">1</span>;
     }
+
+    blockchain_path.<span class="pl-c1">remove_trailing_separator</span>();
 
     <span class="pl-c">// enable basic monero log output</span>
     <span class="pl-c1">uint32_t</span> log_level = <span class="pl-c1">0</span>;
@@ -333,7 +347,7 @@ options have default values which work.</p>
     xmreg::MicroCore mcore;
 
     <span class="pl-c">// initialize the core using the blockchain path</span>
-    <span class="pl-k">if</span> (!mcore.<span class="pl-c1">init</span>(blockchain_path))
+    <span class="pl-k">if</span> (!mcore.<span class="pl-c1">init</span>(blockchain_path.<span class="pl-c1">string</span>()))
     {
         cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Error accessing blockchain.<span class="pl-pds">"</span></span> &lt;&lt; endl;
         <span class="pl-k">return</span> <span class="pl-c1">1</span>;
@@ -519,6 +533,8 @@ Output no: 5, <span class="pl-k">&lt;</span>e1956d1077a9e5310c22a6a103e32f25def9
 
 Total xmr received: 9.180000000000</pre></div>
 
+<p>These results agree also with those obtained using <a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a>.</p>
+
 <h1>
 <a id="output-example-3" class="anchor" href="#output-example-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output example 3</h1>
 
@@ -566,6 +582,8 @@ Output no: 4, <span class="pl-k">&lt;</span>1ba3063bd57752537ca7ccd47ff2c0a72b7d
 
 Total xmr received: 9.120000000000</pre></div>
 
+<p>These results agree also with those obtained using <a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a>.</p>
+
 <h2>
 <a id="compile-this-example" class="anchor" href="#compile-this-example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Compile this example</h2>
 
@@ -578,11 +596,6 @@ git clone https://github.com/moneroexamples/access-blockchain-in-cpp.git
 
 <span class="pl-c"># enter the downloaded sourced code folder</span>
 <span class="pl-c1">cd</span> access-blockchain-in-cpp
-
-<span class="pl-c"># you can edit main.cpp and change the hard coded default</span>
-<span class="pl-c"># database location. If not, you have to provide path to</span>
-<span class="pl-c"># the blockchain using --bc-path option, for example,</span>
-<span class="pl-c"># ./xmreg01 --bc-path ~/.bitmonero/lmdb</span>
 
 <span class="pl-c"># create the makefile</span>
 cmake <span class="pl-c1">.</span>
@@ -602,32 +615,6 @@ folder. How to use it, can be seen in the above example outputs.</p>
 
 <pre><code>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU
 </code></pre>
-
-
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    
-    var disqus_config = function () {
-        this.page.url = 'https://moneroexamples.github.io/access-blockchain-in-cpp/'; 
-        this.page.identifier = 'access-blockchain-using-c++'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-    };
-    
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
-        
-        s.src = '//moneroexamples.disqus.com/embed.js';
-        
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
-
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/moneroexamples/access-blockchain-in-cpp">Monero Examples</a> is maintained by <a href="https://github.com/moneroexamples">moneroexamples</a>.</span>
