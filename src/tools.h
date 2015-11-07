@@ -9,6 +9,11 @@
 
 #include "monero_headers.h"
 
+/**
+ * Some helper functions used in the example.
+ * Names are rather self-explanatory, so I think
+ * there is no reason for any detailed explanations here
+ */
 namespace xmreg
 {
     using namespace cryptonote;

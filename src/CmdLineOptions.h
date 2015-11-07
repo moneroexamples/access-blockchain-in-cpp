@@ -17,6 +17,11 @@ namespace xmreg
     using namespace std;
     using namespace boost::program_options;
 
+    /**
+     * Manages program options of this example program.
+     *
+     * Basically a wrapper for boost::program_options
+     */
     class CmdLineOptions {
         variables_map vm;
 

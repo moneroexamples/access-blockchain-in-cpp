@@ -8,11 +8,20 @@ namespace xmreg
 {
 
 
+    /**
+     * Parse key string, e.g., a viewkey in a string
+     * into crypto::secret_key or crypto::public_key
+     * depending on the template argument.
+     */
     template <typename T>
     bool
     parse_str_secret_key(const string& key_str, T& secret_key)
     {
 
+        // hash and keys have same structure, so to parse string of
+        // a key, e.g., a view key, we can first parse it into the hash
+        // object using parse_hash256 function, and then copy the reslting
+        // hash data into secret key.
         crypto::hash hash_;
 
         if(!parse_hash256(key_str, hash_))
@@ -21,6 +30,10 @@ namespace xmreg
             return false;
         }
 
+        // crypto::hash and crypto::secret_key have basicly same
+        // structure. They both keep they key/hash as c-style char array
+        // of fixed size. Thus we can just copy data from hash
+        // to key
         copy(begin(hash_.data), end(hash_.data), secret_key.data);
 
         return true;
@@ -31,6 +44,11 @@ namespace xmreg
     template bool parse_str_secret_key<crypto::public_key>(const string& key_str, crypto::public_key& secret_key);
 
 
+    /**
+     * Get transaction tx using given tx hash. Hash is represent as string here,
+     * so before we can tap into the blockchain, we need to pare it into
+     * crypto::hash object.
+     */
     bool
     get_tx_pub_key_from_str_hash(Blockchain& core_storage, const string& hash_str, transaction& tx)
     {
@@ -39,6 +57,7 @@ namespace xmreg
 
         try
         {
+            // get transaction with given hash
             tx = core_storage.get_db().get_tx(tx_hash);
         }
         catch (const TX_DNE& e)
@@ -50,6 +69,10 @@ namespace xmreg
         return true;
     }
 
+    /**
+     * Parse monero address in a string form into
+     * cryptonote::account_public_address object
+     */
     bool
     parse_str_address(const string& address_str, account_public_address& address)
     {
@@ -64,12 +87,13 @@ namespace xmreg
     }
 
 
+    /**
+     * Return string representation of monero address
+     */
     string
     print_address(const account_public_address& address)
     {
         return get_account_address_as_str(false, address);
     }
-
-
 
 }
