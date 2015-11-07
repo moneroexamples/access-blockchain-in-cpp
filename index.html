@@ -12,7 +12,7 @@
   <body>
     <section class="page-header">
       <h1 class="project-name">Monero Examples</h1>
-      <h2 class="project-tagline">access-blockchain-using-c++</h2>
+      <h2 class="project-tagline">01 access-blockchain-using-c++</h2>
       <a href="https://github.com/moneroexamples/access-blockchain-in-cpp" class="btn">View on GitHub</a>
       <a href="https://github.com/moneroexamples/access-blockchain-in-cpp/zipball/master" class="btn">Download .zip</a>
       <a href="https://github.com/moneroexamples/access-blockchain-in-cpp/tarball/master" class="btn">Download .tar.gz</a>
@@ -327,6 +327,7 @@ options have default values which work.</p>
     string tx_hash_str = tx_hash_opt ? *tx_hash_opt : <span class="pl-s"><span class="pl-pds">"</span>66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577<span class="pl-pds">"</span></span>;
     path blockchain_path = bc_path_opt ? <span class="pl-c1">path</span>(*bc_path_opt) : <span class="pl-c1">path</span>(default_lmdb_dir);
 
+
     <span class="pl-k">if</span> (!<span class="pl-c1">is_directory</span>(blockchain_path))
     {
         cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Given path <span class="pl-cce">\"</span><span class="pl-pds">"</span></span> &lt;&lt; blockchain_path   &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\"</span> <span class="pl-pds">"</span></span>
@@ -335,7 +336,9 @@ options have default values which work.</p>
         <span class="pl-k">return</span> <span class="pl-c1">1</span>;
     }
 
-    blockchain_path.<span class="pl-c1">remove_trailing_separator</span>();
+    blockchain_path = <span class="pl-c1">xmreg::remove_trailing_path_separator</span>(blockchain_path);
+
+    cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Blockchain path: <span class="pl-pds">"</span></span> &lt;&lt; blockchain_path &lt;&lt; endl;
 
     <span class="pl-c">// enable basic monero log output</span>
     <span class="pl-c1">uint32_t</span> log_level = <span class="pl-c1">0</span>;
@@ -615,31 +618,6 @@ folder. How to use it, can be seen in the above example outputs.</p>
 
 <pre><code>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU
 </code></pre>
-
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    
-    var disqus_config = function () {
-        this.page.url = 'https://moneroexamples.github.io/access-blockchain-in-cpp/'; 
-        this.page.identifier = 'access-blockchain-using-c++'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-    };
-    
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
-        
-        s.src = '//moneroexamples.disqus.com/embed.js';
-        
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
-
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/moneroexamples/access-blockchain-in-cpp">Monero Examples</a> is maintained by <a href="https://github.com/moneroexamples">moneroexamples</a>.</span>
