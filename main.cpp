@@ -2,6 +2,7 @@
 #include <string>
 
 #include "src/MicroCore.h"
+#include "src/CmdLineOptions.h"
 #include "src/tools.h"
 
 
@@ -9,22 +10,41 @@ using namespace std;
 
 unsigned int epee::g_test_dbg_lock_sleep = 0;
 
-int main() {
+int main(int ac, const char* av[]) {
+
+
+    // get command line options
+    xmreg::CmdLineOptions opts {ac, av};
+
+    auto help_opt = opts.get_option<bool>("help");
+
+    // if help was chosen, display help text and finish
+    if (*help_opt)
+    {
+        return 0;
+    }
+
+    // get other options
+    auto address_opt = opts.get_option<string>("address");
+    auto viewkey_opt = opts.get_option<string>("viewkey");
+    auto tx_hash_opt = opts.get_option<string>("txhash");
+    auto bc_path_opt = opts.get_option<string>("blockchain_path");
+
+
+
+    string address_str = address_opt ? *address_opt : "48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU";
+    string viewkey_str = viewkey_opt ? *viewkey_opt : "1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a";
+    string tx_hash_str = tx_hash_opt ? *tx_hash_opt : "66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577";
+    string blockchain_path = bc_path_opt ? *bc_path_opt : "/home/mwo/.bitmonero/lmdb";
+
+
 
     // enable basic monero log output
     uint32_t log_level = 0;
     epee::log_space::get_set_log_detalisation_level(true, log_level);
-    epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL); //LOGGER_NULL
+    epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL);
 
-    // location of the lmdb blockchain
-    string blockchain_path {"/home/mwo/.bitmonero/lmdb"};
 
-    // input data: public address, private view key and tx hash
-    // they are hardcoded here, as I dont want to unnecessary
-    // bloat the code with parsing input arguments
-    string address_str {"48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU"};
-    string viewkey_str {"1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a"};
-    string tx_hash_str {"66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577"};
 
 
     // our micro cryptonote core

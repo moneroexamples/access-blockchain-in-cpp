@@ -8,8 +8,9 @@ set(SOURCE_HEADERS
 		monero_headers.h)
 
 set(SOURCE_FILES
-        MicroCore.cpp
-		tools.cpp)
+		MicroCore.cpp
+		tools.cpp
+		CmdLineOptions.cpp)
 
 # make static library called libmyxrm
 # that we are going to link to

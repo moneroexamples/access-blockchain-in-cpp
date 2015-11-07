@@ -380,8 +380,15 @@ int main() {
 }
 ```
 
-# Output
-The main output is as follows:
+# Output example 1
+Executing the program as follows:
+
+```bash
+./xmreg01 --address 48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU --viewkey 1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a --txhash 66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577
+```
+
+Results in the following output:
+
 ```bash
 address          : <48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU>
 private view key : <1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a>
@@ -399,6 +406,81 @@ Output no: 5, <2602e4ac211216571ab1afe631aae1f905f252a1150cb8c4e5f34b820d0d6b4a>
 Total xmr received: 4.800000000000
 ```
 These results agree with those obtained using [XMR test](http://xmrtests.llcoins.net/checktx.html).
+
+# Output example 2
+
+Executing the program as follows:
+
+```bash
+./xmreg01 --address 41vEA7Ye8Bpeda6g59v5t46koWrVn2PNgEKgzquJjmiKCFTsh9gajr8J3pad49rqu581TAtFGCH9CYTCkYrCpuWUG9GkgeB --viewkey fed77158ec692fe9eb951f6aeb22c3bda16fe8926c1aac13a5651a9c27f34309 --txhash ba807a90792f9202638e7288eff05949ccffbc54fd6a108571b65b963fee573a
+```
+Results in the following output:
+
+```bash
+address          : <41vEA7Ye8Bpeda6g59v5t46koWrVn2PNgEKgzquJjmiKCFTsh9gajr8J3pad49rqu581TAtFGCH9CYTCkYrCpuWUG9GkgeB>
+private view key : <fed77158ec692fe9eb951f6aeb22c3bda16fe8926c1aac13a5651a9c27f34309>
+tx hash          : <ba807a90792f9202638e7288eff05949ccffbc54fd6a108571b65b963fee573a>
+public tx key    : <70dd2b3a54dc153ab367d7bab9287db1e153053e02a5a273084da00344e11e59>
+dervied key      : <dad78e5ec247b91101cad60b98c09866cbcc46a3039c49a0de13be6e0645d8da>
+
+Output no: 0, <460de8a6a3afea230c1a68db55054a67d2b33d80482cc5df645fed631d3b9c6e>, not mine key
+Output no: 1, <54681e67463b5baf79a145ec90969ac0c1d358595e5a32c1e37e085290ee0dfe>, mine key: 0.080000000000
+Output no: 2, <eb02627448c4cb2f21b3277f2a4359984cd89d0636a327ca068fe76f8d970bad>, mine key: 0.100000000000
+Output no: 3, <584df4be03187e5545c6255cd61fee33afbdfa0b70fba2d9678cd43fd23f4df7>, not mine key
+Output no: 4, <673f519e5a7e874485a5b239c54fc289941c7c15ad200f02d46ad98adfbd8049>, mine key: 9.000000000000
+Output no: 5, <e1956d1077a9e5310c22a6a103e32f25def9aab4a7214894ed30a76d18cde271>, not mine key
+
+Total xmr received: 9.180000000000
+```
+
+#Output example 3
+Executing the program as follows:
+```bash
+./xmreg01 --address 48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU --viewkey 1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a --txhash b82fe6d1f40e71a89a0c6d517ee1e84e4403870cba4589d0e6ca341ef966e143
+
+```
+Results in the following output:
+
+```bash
+address          : <48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU>
+private view key : <1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a>
+tx hash          : <b82fe6d1f40e71a89a0c6d517ee1e84e4403870cba4589d0e6ca341ef966e143>
+public tx key    : <99b7c2876e2058718c496f36656e459352d055101cb87827f60e75d60f632727>
+dervied key      : <cdac177a666eba391d5edc4f835e1e0d3e8f8735e322a0476b91e4d6e3a3a7f2>
+
+Output no: 0, <2f1cf7db49a058592b58bdbb5a2121fb067f0be4fcd167936a242ad76fd7b32c>, mine key: 0.020000000000
+Output no: 1, <0c37db67fd9cab5c3ce939df0a64905278ceb4520dde102c87f0bf66b1465aaa>, mine key: 0.100000000000
+Output no: 2, <dbf1aac53547cc8ad8b288bdd83ae642aec2216fc647980e64e0a776a42b4267>, mine key: 9.000000000000
+
+Total xmr received: 9.120000000000
+```
+
+These results also agree with those obtained using [XMR test](http://xmrtests.llcoins.net/checktx.html).
+
+#Output example 4
+Executing the program as follows:
+
+```bash
+./xmreg01 --address 41vEA7Ye8Bpeda6g59v5t46koWrVn2PNgEKgzquJjmiKCFTsh9gajr8J3pad49rqu581TAtFGCH9CYTCkYrCpuWUG9GkgeB --viewkey fed77158ec692fe9eb951f6aeb22c3bda16fe8926c1aac13a5651a9c27f34309 --txhash 60b6c42f1a3bea6ecf2adb8a4f98753be5a0a3e032a98beb7bdc44a325cea7e6
+```
+
+Results in the following output:
+
+```bash
+address          : <41vEA7Ye8Bpeda6g59v5t46koWrVn2PNgEKgzquJjmiKCFTsh9gajr8J3pad49rqu581TAtFGCH9CYTCkYrCpuWUG9GkgeB>
+private view key : <fed77158ec692fe9eb951f6aeb22c3bda16fe8926c1aac13a5651a9c27f34309>
+tx hash          : <60b6c42f1a3bea6ecf2adb8a4f98753be5a0a3e032a98beb7bdc44a325cea7e6>
+public tx key    : <c6e755802545f5444f095ab31be3c2aaca4500d0b016d34cc0953b37cb198a1d>
+dervied key      : <a6e57d6eed1c17cdb1da1b43ee0a4f49c2bfd2138d8da237f354f324712a67ba>
+
+Output no: 0, <d58986ca9258cd4e4f7b0ef9baf3f61a49869364f5a9ec4a3d9186382a6b5110>, mine key: 0.020000000000
+Output no: 1, <50fc47f931dfa393e369ab84a967c82dd866fd02205d656866dde9c2650329ca>, not mine key
+Output no: 2, <55ea815f82a1552af2cf003b70f023bcde201ce3ad1ae8453ce9291b788d1cac>, mine key: 0.100000000000
+Output no: 3, <e0d26e4d31022197d0831d3ba08b6b43e57672ccb9229880b29404468fd5984a>, not mine key
+Output no: 4, <1ba3063bd57752537ca7ccd47ff2c0a72b7dcd8d8510fc222737636f208174cc>, mine key: 9.000000000000
+
+Total xmr received: 9.120000000000
+```
 
 ## How can you help?
 
