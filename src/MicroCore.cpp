@@ -49,6 +49,7 @@ namespace xmreg
 
         try
         {
+            // try opening lmdb database files
             db->open(blockchain_path, db_flags);
         }
         catch (const std::exception& e)
@@ -57,11 +58,15 @@ namespace xmreg
             return false;
         }
 
+        // check if the blockchain database
+        // is successful opened
         if(!db->is_open())
         {
             return false;
         }
 
+        // initialize Blockchain object to manage
+        // the database.
         return m_blockchain_storage.init(db, false);
     }
 
@@ -92,5 +97,4 @@ namespace xmreg
     {
         m_blockchain_storage.deinit();
     }
-
 }

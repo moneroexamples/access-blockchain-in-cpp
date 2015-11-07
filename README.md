@@ -123,7 +123,7 @@ namespace xmreg
      * m_mempool and m_blockchain_storage depend
      * on each other.
      *
-     * So basically m_mempool initialized with
+     * So basically m_mempool is initialized with
      * reference to Blockchain (i.e., Blockchain&)
      * and m_blockchain_storage is initialized with
      * reference to m_mempool (i.e., tx_memory_pool&)
@@ -161,6 +161,7 @@ namespace xmreg
 
         try
         {
+            // try opening lmdb database files
             db->open(blockchain_path, db_flags);
         }
         catch (const std::exception& e)
@@ -169,11 +170,15 @@ namespace xmreg
             return false;
         }
 
+        // check if the blockchain database
+        // is successful opened
         if(!db->is_open())
         {
             return false;
         }
 
+        // initialize Blockchain object to manage
+        // the database.
         return m_blockchain_storage.init(db, false);
     }
 
@@ -204,50 +209,78 @@ namespace xmreg
     {
         m_blockchain_storage.deinit();
     }
-
 }
 ```
 
 ## main.cpp
 
 ```c++
+#include <iostream>
+#include <string>
 
 #include "src/MicroCore.h"
+#include "src/CmdLineOptions.h"
 #include "src/tools.h"
 
 
 using namespace std;
 
+// without this it wont work. I'm not sure what it does.
+// it has something to do with locking the blockchain and tx pool
+// during certain operations to avoid deadlocks.
 unsigned int epee::g_test_dbg_lock_sleep = 0;
 
-int main() {
+
+int main(int ac, const char* av[]) {
+
+    // get command line options
+    xmreg::CmdLineOptions opts {ac, av};
+
+    auto help_opt = opts.get_option<bool>("help");
+
+    // if help was chosen, display help text and finish
+    if (*help_opt)
+    {
+        return 0;
+    }
+
+    // get other options
+    auto address_opt = opts.get_option<string>("address");
+    auto viewkey_opt = opts.get_option<string>("viewkey");
+    auto tx_hash_opt = opts.get_option<string>("txhash");
+    auto bc_path_opt = opts.get_option<string>("bc-path");
+
+
+    // get the program command line options, or
+    // some default values for quick check
+    string address_str = address_opt ? *address_opt : "48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU";
+    string viewkey_str = viewkey_opt ? *viewkey_opt : "1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a";
+    string tx_hash_str = tx_hash_opt ? *tx_hash_opt : "66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577";
+    string blockchain_path = bc_path_opt ? *bc_path_opt : "/home/mwo/.bitmonero/lmdb";
+
+    if (!boost::filesystem::exists(blockchain_path))
+    {
+        cerr << "Folder does not exist: " << blockchain_path << endl;
+        return 1;
+    }
 
     // enable basic monero log output
     uint32_t log_level = 0;
     epee::log_space::get_set_log_detalisation_level(true, log_level);
-    epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL); //LOGGER_NULL
-
-    // location of the lmdb blockchain
-    string blockchain_path {"/home/mwo/.bitmonero/lmdb"};
-
-    // input data: public address, private view key and tx hash
-    // they are hardcoded here, as I dont want to unnecessary
-    // bloat the code with parsing input arguments
-    string address_str {"48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU"};
-    string viewkey_str {"1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a"};
-    string tx_hash_str {"66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577"};
+    epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL);
 
 
-    // our micro cryptonote core
+    // create instance of our MicroCore
     xmreg::MicroCore mcore;
 
+    // initialize the core using the blockchain path
     if (!mcore.init(blockchain_path))
     {
         cerr << "Error accessing blockchain." << endl;
         return 1;
     }
 
-    // get the high level cryptonote::Blockchain object to interact
+    // get the highlevel cryptonote::Blockchain object to interact
     // with the blockchain lmdb database
     cryptonote::Blockchain& core_storage = mcore.get_core();
 
@@ -258,8 +291,7 @@ int main() {
     cout << "Current blockchain height: " << height << endl;
 
 
-
-    // parse string representing of monero address
+    // parse string representing given monero address
     cryptonote::account_public_address address;
 
     if (!xmreg::parse_str_address(address_str,  address))
@@ -269,7 +301,7 @@ int main() {
     }
 
 
-    // parse string representing of our private viewkey
+    // parse string representing of givenr private viewkey
     crypto::secret_key prv_view_key;
     if (!xmreg::parse_str_secret_key(viewkey_str, prv_view_key))
     {
@@ -278,8 +310,8 @@ int main() {
     }
 
 
-    // we also need tx public key, rather than tx hash.
-    // to get it first, we obtained transaction object tx
+    // we also need tx public key, but we have tx hash only.
+    // to get the key, first, we obtained transaction object tx
     // and then we get its public key from tx's extras.
     cryptonote::transaction tx;
 
@@ -299,8 +331,8 @@ int main() {
     }
 
 
-    // public transaction key is combined with our view key
-    // to get so called, derived key.
+    // public transaction key is combined with our viewkey
+    // to create, so called, derived key.
     crypto::key_derivation derivation;
 
     if (!generate_key_derivation(pub_tx_key, prv_view_key, derivation))
@@ -321,10 +353,10 @@ int main() {
          << "dervied key      : "  << derivation << "\n" << endl;
 
 
-    // each tx that we (or the adddress we are checking) received
+    // each tx that we (or the address we are checking) received
     // contains a number of outputs.
     // some of them are ours, some not. so we need to go through
-    // all of them in a given tx block, to check with outputs are ours.
+    // all of them in a given tx block, to check which outputs are ours.
 
     // get the total number of outputs in a transaction.
     size_t output_no = tx.vout.size();
@@ -334,21 +366,21 @@ int main() {
     uint64_t money_transfered {0};
 
     // loop through outputs in the given tx
-    // to check which outputs our ours, we compare outputs
-    // public keys, with the public key that would had been
-    // generated for us.
+    // to check which outputs our ours. we compare outputs'
+    // public keys with the public key that would had been
+    // generated for us if we had gotten the outputs.
+    // not sure this is the case though, but that's my understanding.
     for (size_t i = 0; i < output_no; ++i)
     {
         // get the tx output public key
         // that normally would be generated for us,
-        // if someone send us some xrm
+        // if someone had sent us some xmr.
         crypto::public_key pubkey;
 
         crypto::derive_public_key(derivation,
                                   i,
                                   address.m_spend_public_key,
                                   pubkey);
-
 
         // get tx output public key
         const cryptonote::txout_to_key tx_out_to_key
@@ -368,7 +400,6 @@ int main() {
         {
             cout << ", not mine key " << endl;
         }
-
     }
 
     cout << "\nTotal xmr received: " << cryptonote::print_money(money_transfered) << endl;
