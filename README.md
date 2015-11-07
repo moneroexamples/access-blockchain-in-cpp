@@ -543,6 +543,19 @@ Output no: 4, <1ba3063bd57752537ca7ccd47ff2c0a72b7dcd8d8510fc222737636f208174cc>
 Total xmr received: 9.120000000000
 ```
 
+## Compile this example
+The dependencies are same as those for Monero, so I assume Monero compiles
+correctly. If so then to download and compile this example, the following
+steps can be executed:
+
+```bash
+# download the source code
+git clone git@github.com:moneroexamples/access-blockchain-in-cpp.git
+
+# enter the downloaded sourced code folder
+cd access-blockchain-in-cpp
+```
+
 ## How can you help?
 
 Constructive criticism, code and website edits are always good. They can be made through github.
