@@ -22,26 +22,37 @@
       <h1>
 <a id="access-blockchain-information-using-c" class="anchor" href="#access-blockchain-information-using-c" aria-hidden="true"><span class="octicon octicon-link"></span></a>Access blockchain information using C++</h1>
 
-<p>How to develop on top of monero? One way is to use josn-rpc calls from
+<p>How to develop on top of Monero? One way is to use json-rpc calls from
 any language capable of this, for example, as
 <a href="http://moneroexamples.github.io/python-json-rpc/">shown in python</a>. Another way
 is to use pubilc api of existing monero services such as
- <a href="http://moneroblocks.eu/api">moneroblocks</a>. These to approaches can be useful,
- but they have limitations in that they allow for only a fraction of what
- monero can do. The reason is that most functionality of monero is available
- through C++11 libraries. Those can be difficult to navigate and use.</p>
+ <a href="http://moneroblocks.eu/api">moneroblocks</a>. Some Monero functions are even
+ avaliable in js if you look at the source code of <a href="https://mymonero.com/#/">mymonero.com</a>
+ which allows to develop some web applications with only html and js, such as,
+<a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a>.</p>
 
-<p>For this reason this example was created. To show can one can use c++ monero
-libraries to write something that uses the wealthy of monero libraries and tools.</p>
+<p>The other way, presented here, is to directly tap into monero C++ libraries
+to do something useful. However, there are no tutorials or any information how to do it.</p>
+
+<p>For this reason this example was created. To shows how access Monero C++ libraries
+and do something with them. I don't know if this is the correct way of doing
+this, but it seems to be working.</p>
 
 <h1>
 <a id="objective" class="anchor" href="#objective" aria-hidden="true"><span class="octicon octicon-link"></span></a>Objective</h1>
 
-<p>To check which transaction's outputs in a given block belong to a given
-address. This is already possible using
+<p>There's been a lot of talk in Monero about viewkeys. But how do you actually use them?
+Well, they can be used to to check which transaction's outputs in a given block belong to a given
+address. Without the private viewkey of associated with the given Monero address it is not
+possible to check check how much xmr there are in that address. The same if we know that
+a given transaction was sent to the given address, it is not possible to check which
+outputs of that transaction actually are meant to belong to the address without
+viewkey of that address. The viewkey allows to filter out outputs not not bind to the address.</p>
+
+<p>This is already possible using
  <a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a> website. And this is good,
- since it allows us to very results obtained this C++11 code with those
- provided by XMR test.</p>
+ since it allows us to very results obtained using this example with those
+ provided by XMR test website.</p>
 
 <h1>
 <a id="pre-requsits" class="anchor" href="#pre-requsits" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pre-requsits</h1>
@@ -49,8 +60,8 @@ address. This is already possible using
 <p>Everthing here was done and tested on
 Ubuntu 14.04 x86_64 and Ubuntu 15.10 x86_64.</p>
 
-<p>For monero node is using <code>lmdbq</code>, thus I use this database only in this example.
-I could not test on <code>berkeleydb</code>, thus its not included here.</p>
+<p>Mine Monero node is using <code>lmdbq</code>, thus I use this database only in this example.
+I could not test on <code>berkeleydb</code>.</p>
 
 <h2>
 <a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h2>
@@ -78,7 +89,7 @@ make <span class="pl-c"># or make -j number_of_threads, e.g., make -j 2</span></
 <h2>
 <a id="monero-static-libraries" class="anchor" href="#monero-static-libraries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Monero static libraries</h2>
 
-<p>When the compilation finishes, bunch of static monero libraries
+<p>When the compilation finishes, bunch of static Monero libraries
 should be generated. We will need to link against.</p>
 
 <p>They will be spread around different subfolders of the <code>./build/</code> folder.
@@ -146,7 +157,7 @@ file</p>
 <span class="pl-c">     * m_mempool and m_blockchain_storage depend</span>
 <span class="pl-c">     * on each other.</span>
 <span class="pl-c">     *</span>
-<span class="pl-c">     * So basically m_mempool initialized with</span>
+<span class="pl-c">     * So basically m_mempool is initialized with</span>
 <span class="pl-c">     * reference to Blockchain (i.e., Blockchain&amp;)</span>
 <span class="pl-c">     * and m_blockchain_storage is initialized with</span>
 <span class="pl-c">     * reference to m_mempool (i.e., tx_memory_pool&amp;)</span>
@@ -184,6 +195,7 @@ file</p>
 
         <span class="pl-k">try</span>
         {
+            <span class="pl-c">// try opening lmdb database files</span>
             db-&gt;<span class="pl-c1">open</span>(blockchain_path, db_flags);
         }
         <span class="pl-k">catch</span> (<span class="pl-k">const</span> std::exception&amp; e)
@@ -192,11 +204,15 @@ file</p>
             <span class="pl-k">return</span> <span class="pl-c1">false</span>;
         }
 
+        <span class="pl-c">// check if the blockchain database</span>
+        <span class="pl-c">// is successful opened</span>
         <span class="pl-k">if</span>(!db-&gt;<span class="pl-c1">is_open</span>())
         {
             <span class="pl-k">return</span> <span class="pl-c1">false</span>;
         }
 
+        <span class="pl-c">// initialize Blockchain object to manage</span>
+        <span class="pl-c">// the database.</span>
         <span class="pl-k">return</span> m_blockchain_storage.<span class="pl-c1">init</span>(db, <span class="pl-c1">false</span>);
     }
 
@@ -227,49 +243,77 @@ file</p>
     {
         m_blockchain_storage.<span class="pl-c1">deinit</span>();
     }
-
 }</pre></div>
 
 <h2>
 <a id="maincpp" class="anchor" href="#maincpp" aria-hidden="true"><span class="octicon octicon-link"></span></a>main.cpp</h2>
 
-<div class="highlight highlight-source-c++"><pre>
+<div class="highlight highlight-source-c++"><pre>#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">&lt;</span>iostream<span class="pl-pds">&gt;</span></span>
+#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">&lt;</span>string<span class="pl-pds">&gt;</span></span>
+
 #<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">"</span>src/MicroCore.h<span class="pl-pds">"</span></span>
+#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">"</span>src/CmdLineOptions.h<span class="pl-pds">"</span></span>
 #<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">"</span>src/tools.h<span class="pl-pds">"</span></span>
 
 
 <span class="pl-k">using</span> <span class="pl-k">namespace</span> <span class="pl-en">std</span><span class="pl-k">;</span>
 
+<span class="pl-c">// without this it wont work. I'm not sure what it does.</span>
+<span class="pl-c">// it has something to do with locking the blockchain and tx pool</span>
+<span class="pl-c">// during certain operations to avoid deadlocks.</span>
 <span class="pl-k">unsigned</span> <span class="pl-k">int</span> epee::g_test_dbg_lock_sleep = <span class="pl-c1">0</span>;
 
-<span class="pl-k">int</span> <span class="pl-en">main</span>() {
+
+<span class="pl-k">int</span> <span class="pl-en">main</span>(<span class="pl-k">int</span> ac, <span class="pl-k">const</span> <span class="pl-k">char</span>* av[]) {
+
+    <span class="pl-c">// get command line options</span>
+    xmreg::CmdLineOptions opts {ac, av};
+
+    <span class="pl-k">auto</span> help_opt = opts.<span class="pl-smi">get_option</span>&lt;<span class="pl-k">bool</span>&gt;(<span class="pl-s"><span class="pl-pds">"</span>help<span class="pl-pds">"</span></span>);
+
+    <span class="pl-c">// if help was chosen, display help text and finish</span>
+    <span class="pl-k">if</span> (*help_opt)
+    {
+        <span class="pl-k">return</span> <span class="pl-c1">0</span>;
+    }
+
+    <span class="pl-c">// get other options</span>
+    <span class="pl-k">auto</span> address_opt = opts.<span class="pl-smi">get_option</span>&lt;string&gt;(<span class="pl-s"><span class="pl-pds">"</span>address<span class="pl-pds">"</span></span>);
+    <span class="pl-k">auto</span> viewkey_opt = opts.<span class="pl-smi">get_option</span>&lt;string&gt;(<span class="pl-s"><span class="pl-pds">"</span>viewkey<span class="pl-pds">"</span></span>);
+    <span class="pl-k">auto</span> tx_hash_opt = opts.<span class="pl-smi">get_option</span>&lt;string&gt;(<span class="pl-s"><span class="pl-pds">"</span>txhash<span class="pl-pds">"</span></span>);
+    <span class="pl-k">auto</span> bc_path_opt = opts.<span class="pl-smi">get_option</span>&lt;string&gt;(<span class="pl-s"><span class="pl-pds">"</span>bc-path<span class="pl-pds">"</span></span>);
+
+
+    <span class="pl-c">// get the program command line options, or</span>
+    <span class="pl-c">// some default values for quick check</span>
+    string address_str = address_opt ? *address_opt : <span class="pl-s"><span class="pl-pds">"</span>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU<span class="pl-pds">"</span></span>;
+    string viewkey_str = viewkey_opt ? *viewkey_opt : <span class="pl-s"><span class="pl-pds">"</span>1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a<span class="pl-pds">"</span></span>;
+    string tx_hash_str = tx_hash_opt ? *tx_hash_opt : <span class="pl-s"><span class="pl-pds">"</span>66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577<span class="pl-pds">"</span></span>;
+    string blockchain_path = bc_path_opt ? *bc_path_opt : <span class="pl-s"><span class="pl-pds">"</span>/home/mwo/.bitmonero/lmdb<span class="pl-pds">"</span></span>;
+
+    <span class="pl-k">if</span> (!<span class="pl-c1">boost::filesystem::exists</span>(blockchain_path))
+    {
+        cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Folder does not exist: <span class="pl-pds">"</span></span> &lt;&lt; blockchain_path &lt;&lt; endl;
+        <span class="pl-k">return</span> <span class="pl-c1">1</span>;
+    }
 
     <span class="pl-c">// enable basic monero log output</span>
     <span class="pl-c1">uint32_t</span> log_level = <span class="pl-c1">0</span>;
     <span class="pl-c1">epee::log_space::get_set_log_detalisation_level</span>(<span class="pl-c1">true</span>, log_level);
-    <span class="pl-c1">epee::log_space::log_singletone::add_logger</span>(LOGGER_CONSOLE, <span class="pl-c1">NULL</span>, <span class="pl-c1">NULL</span>); <span class="pl-c">//LOGGER_NULL</span>
-
-    <span class="pl-c">// location of the lmdb blockchain</span>
-    string blockchain_path {<span class="pl-s"><span class="pl-pds">"</span>/home/mwo/.bitmonero/lmdb<span class="pl-pds">"</span></span>};
-
-    <span class="pl-c">// input data: public address, private view key and tx hash</span>
-    <span class="pl-c">// they are hardcoded here, as I dont want to unnecessary</span>
-    <span class="pl-c">// bloat the code with parsing input arguments</span>
-    string address_str {<span class="pl-s"><span class="pl-pds">"</span>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU<span class="pl-pds">"</span></span>};
-    string viewkey_str {<span class="pl-s"><span class="pl-pds">"</span>1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a<span class="pl-pds">"</span></span>};
-    string tx_hash_str {<span class="pl-s"><span class="pl-pds">"</span>66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577<span class="pl-pds">"</span></span>};
+    <span class="pl-c1">epee::log_space::log_singletone::add_logger</span>(LOGGER_CONSOLE, <span class="pl-c1">NULL</span>, <span class="pl-c1">NULL</span>);
 
 
-    <span class="pl-c">// our micro cryptonote core</span>
+    <span class="pl-c">// create instance of our MicroCore</span>
     xmreg::MicroCore mcore;
 
+    <span class="pl-c">// initialize the core using the blockchain path</span>
     <span class="pl-k">if</span> (!mcore.<span class="pl-c1">init</span>(blockchain_path))
     {
         cerr &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Error accessing blockchain.<span class="pl-pds">"</span></span> &lt;&lt; endl;
         <span class="pl-k">return</span> <span class="pl-c1">1</span>;
     }
 
-    <span class="pl-c">// get the high level cryptonote::Blockchain object to interact</span>
+    <span class="pl-c">// get the highlevel cryptonote::Blockchain object to interact</span>
     <span class="pl-c">// with the blockchain lmdb database</span>
     cryptonote::Blockchain&amp; core_storage = mcore.<span class="pl-c1">get_core</span>();
 
@@ -280,8 +324,7 @@ file</p>
     cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>Current blockchain height: <span class="pl-pds">"</span></span> &lt;&lt; height &lt;&lt; endl;
 
 
-
-    <span class="pl-c">// parse string representing of monero address</span>
+    <span class="pl-c">// parse string representing given monero address</span>
     cryptonote::account_public_address address;
 
     <span class="pl-k">if</span> (!<span class="pl-c1">xmreg::parse_str_address</span>(address_str,  address))
@@ -291,7 +334,7 @@ file</p>
     }
 
 
-    <span class="pl-c">// parse string representing of our private viewkey</span>
+    <span class="pl-c">// parse string representing of givenr private viewkey</span>
     crypto::secret_key prv_view_key;
     <span class="pl-k">if</span> (!<span class="pl-c1">xmreg::parse_str_secret_key</span>(viewkey_str, prv_view_key))
     {
@@ -300,8 +343,8 @@ file</p>
     }
 
 
-    <span class="pl-c">// we also need tx public key, rather than tx hash.</span>
-    <span class="pl-c">// to get it first, we obtained transaction object tx</span>
+    <span class="pl-c">// we also need tx public key, but we have tx hash only.</span>
+    <span class="pl-c">// to get the key, first, we obtained transaction object tx</span>
     <span class="pl-c">// and then we get its public key from tx's extras.</span>
     cryptonote::transaction tx;
 
@@ -321,8 +364,8 @@ file</p>
     }
 
 
-    <span class="pl-c">// public transaction key is combined with our view key</span>
-    <span class="pl-c">// to get so called, derived key.</span>
+    <span class="pl-c">// public transaction key is combined with our viewkey</span>
+    <span class="pl-c">// to create, so called, derived key.</span>
     crypto::key_derivation derivation;
 
     <span class="pl-k">if</span> (!<span class="pl-c1">generate_key_derivation</span>(pub_tx_key, prv_view_key, derivation))
@@ -343,10 +386,10 @@ file</p>
          &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>dervied key      : <span class="pl-pds">"</span></span>  &lt;&lt; derivation &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span> &lt;&lt; endl;
 
 
-    <span class="pl-c">// each tx that we (or the adddress we are checking) received</span>
+    <span class="pl-c">// each tx that we (or the address we are checking) received</span>
     <span class="pl-c">// contains a number of outputs.</span>
     <span class="pl-c">// some of them are ours, some not. so we need to go through</span>
-    <span class="pl-c">// all of them in a given tx block, to check with outputs are ours.</span>
+    <span class="pl-c">// all of them in a given tx block, to check which outputs are ours.</span>
 
     <span class="pl-c">// get the total number of outputs in a transaction.</span>
     <span class="pl-c1">size_t</span> output_no = tx.<span class="pl-smi">vout</span>.<span class="pl-c1">size</span>();
@@ -356,21 +399,21 @@ file</p>
     <span class="pl-c1">uint64_t</span> money_transfered {<span class="pl-c1">0</span>};
 
     <span class="pl-c">// loop through outputs in the given tx</span>
-    <span class="pl-c">// to check which outputs our ours, we compare outputs</span>
-    <span class="pl-c">// public keys, with the public key that would had been</span>
-    <span class="pl-c">// generated for us.</span>
+    <span class="pl-c">// to check which outputs our ours. we compare outputs'</span>
+    <span class="pl-c">// public keys with the public key that would had been</span>
+    <span class="pl-c">// generated for us if we had gotten the outputs.</span>
+    <span class="pl-c">// not sure this is the case though, but that's my understanding.</span>
     <span class="pl-k">for</span> (<span class="pl-c1">size_t</span> i = <span class="pl-c1">0</span>; i &lt; output_no; ++i)
     {
         <span class="pl-c">// get the tx output public key</span>
         <span class="pl-c">// that normally would be generated for us,</span>
-        <span class="pl-c">// if someone send us some xrm</span>
+        <span class="pl-c">// if someone had sent us some xmr.</span>
         crypto::public_key pubkey;
 
         <span class="pl-c1">crypto::derive_public_key</span>(derivation,
                                   i,
                                   address.<span class="pl-smi">m_spend_public_key</span>,
                                   pubkey);
-
 
         <span class="pl-c">// get tx output public key</span>
         <span class="pl-k">const</span> cryptonote::txout_to_key tx_out_to_key
@@ -390,7 +433,6 @@ file</p>
         {
             cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>, not mine key <span class="pl-pds">"</span></span> &lt;&lt; endl;
         }
-
     }
 
     cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span>Total xmr received: <span class="pl-pds">"</span></span> &lt;&lt; <span class="pl-c1">cryptonote::print_money</span>(money_transfered) &lt;&lt; endl;
@@ -402,9 +444,13 @@ file</p>
 }</pre></div>
 
 <h1>
-<a id="output" class="anchor" href="#output" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output</h1>
+<a id="output-example-1" class="anchor" href="#output-example-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output example 1</h1>
 
-<p>The main output is as follows:</p>
+<p>Executing the program as follows:</p>
+
+<div class="highlight highlight-source-shell"><pre>./xmreg01 --address 48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU --viewkey 1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a --txhash 66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577</pre></div>
+
+<p>Results in the following output:</p>
 
 <div class="highlight highlight-source-shell"><pre>address          <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU<span class="pl-k">&gt;</span>
 private view key <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a<span class="pl-k">&gt;</span>
@@ -422,6 +468,77 @@ Output no: 5, <span class="pl-k">&lt;</span>2602e4ac211216571ab1afe631aae1f905f2
 Total xmr received: 4.800000000000</pre></div>
 
 <p>These results agree with those obtained using <a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a>.</p>
+
+<h1>
+<a id="output-example-2" class="anchor" href="#output-example-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output example 2</h1>
+
+<p>Executing the program as follows:</p>
+
+<div class="highlight highlight-source-shell"><pre>./xmreg01 --address 41vEA7Ye8Bpeda6g59v5t46koWrVn2PNgEKgzquJjmiKCFTsh9gajr8J3pad49rqu581TAtFGCH9CYTCkYrCpuWUG9GkgeB --viewkey fed77158ec692fe9eb951f6aeb22c3bda16fe8926c1aac13a5651a9c27f34309 --txhash ba807a90792f9202638e7288eff05949ccffbc54fd6a108571b65b963fee573a</pre></div>
+
+<p>Results in the following output:</p>
+
+<div class="highlight highlight-source-shell"><pre>address          <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>41vEA7Ye8Bpeda6g59v5t46koWrVn2PNgEKgzquJjmiKCFTsh9gajr8J3pad49rqu581TAtFGCH9CYTCkYrCpuWUG9GkgeB<span class="pl-k">&gt;</span>
+private view key <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>fed77158ec692fe9eb951f6aeb22c3bda16fe8926c1aac13a5651a9c27f<span class="pl-k">34309&gt;</span>
+tx <span class="pl-c1">hash</span>          <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>ba807a90792f9202638e7288eff05949ccffbc54fd6a108571b65b963fee573a<span class="pl-k">&gt;</span>
+public tx key    <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>70dd2b3a54dc153ab367d7bab9287db1e153053e02a5a273084da00344e11e<span class="pl-k">59&gt;</span>
+dervied key      <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>dad78e5ec247b91101cad60b98c09866cbcc46a3039c49a0de13be6e0645d8da<span class="pl-k">&gt;</span>
+
+Output no: 0, <span class="pl-k">&lt;</span>460de8a6a3afea230c1a68db55054a67d2b33d80482cc5df645fed631d3b9c6e<span class="pl-k">&gt;</span>, not mine key
+Output no: 1, <span class="pl-k">&lt;</span>54681e67463b5baf79a145ec90969ac0c1d358595e5a32c1e37e085290ee0dfe<span class="pl-k">&gt;</span>, mine key: 0.080000000000
+Output no: 2, <span class="pl-k">&lt;</span>eb02627448c4cb2f21b3277f2a4359984cd89d0636a327ca068fe76f8d970bad<span class="pl-k">&gt;</span>, mine key: 0.100000000000
+Output no: 3, <span class="pl-k">&lt;</span>584df4be03187e5545c6255cd61fee33afbdfa0b70fba2d9678cd43fd23f4df<span class="pl-k">7&gt;</span>, not mine key
+Output no: 4, <span class="pl-k">&lt;</span>673f519e5a7e874485a5b239c54fc289941c7c15ad200f02d46ad98adfbd<span class="pl-k">8049&gt;</span>, mine key: 9.000000000000
+Output no: 5, <span class="pl-k">&lt;</span>e1956d1077a9e5310c22a6a103e32f25def9aab4a7214894ed30a76d18cde<span class="pl-k">271&gt;</span>, not mine key
+
+Total xmr received: 9.180000000000</pre></div>
+
+<h1>
+<a id="output-example-3" class="anchor" href="#output-example-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output example 3</h1>
+
+<p>Executing the program as follows:</p>
+
+<div class="highlight highlight-source-shell"><pre>./xmreg01 --address 48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU --viewkey 1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a --txhash b82fe6d1f40e71a89a0c6d517ee1e84e4403870cba4589d0e6ca341ef966e143
+</pre></div>
+
+<p>Results in the following output:</p>
+
+<div class="highlight highlight-source-shell"><pre>address          <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU<span class="pl-k">&gt;</span>
+private view key <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a<span class="pl-k">&gt;</span>
+tx <span class="pl-c1">hash</span>          <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>b82fe6d1f40e71a89a0c6d517ee1e84e4403870cba4589d0e6ca341ef966e<span class="pl-k">143&gt;</span>
+public tx key    <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>99b7c2876e2058718c496f36656e459352d055101cb87827f60e75d60f<span class="pl-k">632727&gt;</span>
+dervied key      <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>cdac177a666eba391d5edc4f835e1e0d3e8f8735e322a0476b91e4d6e3a3a7f<span class="pl-k">2&gt;</span>
+
+Output no: 0, <span class="pl-k">&lt;</span>2f1cf7db49a058592b58bdbb5a2121fb067f0be4fcd167936a242ad76fd7b32c<span class="pl-k">&gt;</span>, mine key: 0.020000000000
+Output no: 1, <span class="pl-k">&lt;</span>0c37db67fd9cab5c3ce939df0a64905278ceb4520dde102c87f0bf66b1465aaa<span class="pl-k">&gt;</span>, mine key: 0.100000000000
+Output no: 2, <span class="pl-k">&lt;</span>dbf1aac53547cc8ad8b288bdd83ae642aec2216fc647980e64e0a776a42b<span class="pl-k">4267&gt;</span>, mine key: 9.000000000000
+
+Total xmr received: 9.120000000000</pre></div>
+
+<p>These results also agree with those obtained using <a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a>.</p>
+
+<h1>
+<a id="output-example-4" class="anchor" href="#output-example-4" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output example 4</h1>
+
+<p>Executing the program as follows:</p>
+
+<div class="highlight highlight-source-shell"><pre>./xmreg01 --address 41vEA7Ye8Bpeda6g59v5t46koWrVn2PNgEKgzquJjmiKCFTsh9gajr8J3pad49rqu581TAtFGCH9CYTCkYrCpuWUG9GkgeB --viewkey fed77158ec692fe9eb951f6aeb22c3bda16fe8926c1aac13a5651a9c27f34309 --txhash 60b6c42f1a3bea6ecf2adb8a4f98753be5a0a3e032a98beb7bdc44a325cea7e6</pre></div>
+
+<p>Results in the following output:</p>
+
+<div class="highlight highlight-source-shell"><pre>address          <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>41vEA7Ye8Bpeda6g59v5t46koWrVn2PNgEKgzquJjmiKCFTsh9gajr8J3pad49rqu581TAtFGCH9CYTCkYrCpuWUG9GkgeB<span class="pl-k">&gt;</span>
+private view key <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>fed77158ec692fe9eb951f6aeb22c3bda16fe8926c1aac13a5651a9c27f<span class="pl-k">34309&gt;</span>
+tx <span class="pl-c1">hash</span>          <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>60b6c42f1a3bea6ecf2adb8a4f98753be5a0a3e032a98beb7bdc44a325cea7e<span class="pl-k">6&gt;</span>
+public tx key    <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>c6e755802545f5444f095ab31be3c2aaca4500d0b016d34cc0953b37cb198a1d<span class="pl-k">&gt;</span>
+dervied key      <span class="pl-c1">:</span> <span class="pl-k">&lt;</span>a6e57d6eed1c17cdb1da1b43ee0a4f49c2bfd2138d8da237f354f324712a67ba<span class="pl-k">&gt;</span>
+
+Output no: 0, <span class="pl-k">&lt;</span>d58986ca9258cd4e4f7b0ef9baf3f61a49869364f5a9ec4a3d9186382a6b<span class="pl-k">5110&gt;</span>, mine key: 0.020000000000
+Output no: 1, <span class="pl-k">&lt;</span>50fc47f931dfa393e369ab84a967c82dd866fd02205d656866dde9c2650329ca<span class="pl-k">&gt;</span>, not mine key
+Output no: 2, <span class="pl-k">&lt;</span>55ea815f82a1552af2cf003b70f023bcde201ce3ad1ae8453ce9291b788d1cac<span class="pl-k">&gt;</span>, mine key: 0.100000000000
+Output no: 3, <span class="pl-k">&lt;</span>e0d26e4d31022197d0831d3ba08b6b43e57672ccb9229880b29404468fd5984a<span class="pl-k">&gt;</span>, not mine key
+Output no: 4, <span class="pl-k">&lt;</span>1ba3063bd57752537ca7ccd47ff2c0a72b7dcd8d8510fc222737636f208174cc<span class="pl-k">&gt;</span>, mine key: 9.000000000000
+
+Total xmr received: 9.120000000000</pre></div>
 
 <h2>
 <a id="how-can-you-help" class="anchor" href="#how-can-you-help" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can you help?</h2>
