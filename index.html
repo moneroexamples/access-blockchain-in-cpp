@@ -42,7 +42,7 @@ this, but it seems to be working. If something is done in a stupid or wrong way,
 or my explanations in the comments are incorrect, please let me know.</p>
 
 <h1>
-<a id="objective" class="anchor" href="#objective" aria-hidden="true"><span class="octicon octicon-link"></span></a>Objective</h1>
+<a id="aim-check-which-transactions-outputs-belong-to-a-given-address" class="anchor" href="#aim-check-which-transactions-outputs-belong-to-a-given-address" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aim: check which transaction's outputs belong to a given address</h1>
 
 <p>There's been a lot of talk in Monero about viewkeys. But how do you actually use them?
 Well, they can be used to to check which transaction's outputs in a given block belong to a given
@@ -52,7 +52,7 @@ a given transaction was sent to a specific address, it is not possible to check
 in a blockchain which outputs of that transaction actually were meant to belong to that address without
 the private viewkey of that address. The viewkey allows to filter out outputs not bind to the address.</p>
 
-<p>Checking if any of a transaction's outputs are belong to a given address
+<p>Checking if any of a transaction's outputs belong to a given address
 with the private viewkey of that address is already possible using
  <a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a> website. This is very good,
  since it allows us to very the results obtained using this example with those
@@ -618,31 +618,6 @@ folder. How to use it, can be seen in the above example outputs.</p>
 
 <pre><code>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU
 </code></pre>
-
-
-
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    
-    var disqus_config = function () {
-        this.page.url = 'https://moneroexamples.github.io/access-blockchain-in-cpp/'; 
-        this.page.identifier = 'access-blockchain-using-c++'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-    };
-    
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
-        
-        s.src = '//moneroexamples.disqus.com/embed.js';
-        
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/moneroexamples/access-blockchain-in-cpp">Monero Examples</a> is maintained by <a href="https://github.com/moneroexamples">moneroexamples</a>.</span>
