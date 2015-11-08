@@ -380,7 +380,7 @@ options have default values which work.</p>
     }
 
 
-    <span class="pl-c">// parse string representing of givenr private viewkey</span>
+    <span class="pl-c">// parse string representing given private viewkey</span>
     crypto::secret_key prv_view_key;
     <span class="pl-k">if</span> (!<span class="pl-c1">xmreg::parse_str_secret_key</span>(viewkey_str, prv_view_key))
     {
@@ -471,7 +471,7 @@ options have default values which work.</p>
         <span class="pl-c">// check if the output's public key is ours</span>
         <span class="pl-k">if</span> (tx_out_to_key.<span class="pl-smi">key</span> == pubkey)
         {
-            <span class="pl-c">// if so, than add the xmr amount to the money_transfered</span>
+            <span class="pl-c">// if so, then add the xmr amount to the money_transfered</span>
             money_transfered += tx.<span class="pl-smi">vout</span>[i].<span class="pl-smi">amount</span>;
             cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>, mine key: <span class="pl-pds">"</span></span> &lt;&lt; <span class="pl-c1">cryptonote::print_money</span>(tx.<span class="pl-smi">vout</span>[i].<span class="pl-smi">amount</span>) &lt;&lt; endl;
         }
