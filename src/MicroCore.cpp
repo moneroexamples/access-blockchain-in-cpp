@@ -72,7 +72,6 @@ namespace xmreg
 
     /**
     * Get m_blockchain_storage.
-    * Initialize m_blockchain_storage with the BlockchainLMDB object.
     */
     Blockchain&
     MicroCore::get_core()

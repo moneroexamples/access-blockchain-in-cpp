@@ -101,7 +101,7 @@ int main(int ac, const char* av[]) {
     }
 
 
-    // parse string representing of givenr private viewkey
+    // parse string representing given private viewkey
     crypto::secret_key prv_view_key;
     if (!xmreg::parse_str_secret_key(viewkey_str, prv_view_key))
     {
@@ -113,6 +113,7 @@ int main(int ac, const char* av[]) {
     // we also need tx public key, but we have tx hash only.
     // to get the key, first, we obtained transaction object tx
     // and then we get its public key from tx's extras.
+    // this is done using get_tx_pub_key_from_str_hash function
     cryptonote::transaction tx;
 
     if (!xmreg::get_tx_pub_key_from_str_hash(core_storage, tx_hash_str, tx))
@@ -192,7 +193,7 @@ int main(int ac, const char* av[]) {
         // check if the output's public key is ours
         if (tx_out_to_key.key == pubkey)
         {
-            // if so, than add the xmr amount to the money_transfered
+            // if so, then add the xmr amount to the money_transfered
             money_transfered += tx.vout[i].amount;
             cout << ", mine key: " << cryptonote::print_money(tx.vout[i].amount) << endl;
         }
