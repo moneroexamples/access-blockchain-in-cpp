@@ -32,7 +32,7 @@ the private viewkey of that address. The viewkey allows to filter out outputs no
 Checking if any of a transaction's outputs belong to a given address
 with the private viewkey of that address is already possible using
  [XMR test](http://xmrtests.llcoins.net/checktx.html) website. This is very good,
- since it allows us to very the results obtained using this example with those
+ since it allows us to verify the results obtained using this example with those
  provided by that website.
 
 
@@ -41,8 +41,7 @@ with the private viewkey of that address is already possible using
 Everthing here was done and tested on
 Ubuntu 14.04 x86_64 and Ubuntu 15.10 x86_64.
 
-Mine Monero node is using `lmdbq`, thus I use this database only in this example.
-I could not test on `berkeleydb`.
+Monero node that I run is using `lmdb` database for blockchain. Thus I use this database in this example.
 
 ## Dependencies
 
@@ -75,7 +74,7 @@ make # or make -j number_of_threads, e.g., make -j 2
 When the compilation finishes, a number of static Monero libraries
 should be generated. We will need them to link against.
 
-Since they are spread around different subfolders of the `./build/` folder,
+Since they are spread out over different subfolders of the `./build/` folder,
 it is easier to just copy them into one folder. I assume that
  `/opt/bitmonero-dev/libs` is the folder where they are going to be copied to.
 
@@ -85,7 +84,7 @@ sudo mkdir -p /opt/bitmonero-dev/libs
 
 # find the static libraries files (i.e., those with extension of *.a)
 # and copy them to /opt/bitmonero-dev/libs
-# assuming you are still in bitmonero/ folder which got downloaded from
+# assuming you are still in bitmonero/ folder which you downloaded from
 # github
 sudo find ./build/ -name '*.a' -exec cp {} /opt/bitmonero-dev/libs  \;
  ```
@@ -101,8 +100,8 @@ to hold the headers.
 sudo mkdir -p /opt/bitmonero-dev/headers
 
 # find the header files (i.e., those with extension of *.h)
-# and copy them to /opt/bitmonero-dev/headers
-# but this time the structure of directions is important
+# and copy them to /opt/bitmonero-dev/headers.
+# but this time the structure of directories is important
 # so rsync is used to find and copy the headers files
 sudo rsync -zarv --include="*/" --include="*.h" --exclude="*" --prune-empty-dirs ./ /opt/bitmonero-dev/headers
  ```
@@ -119,19 +118,23 @@ that in this example, please change the root `CMakeLists.txt` file
 accordingly.
 
 # C++ code
-The two most interesting C++ source files in this example are `MicroCore.cpp` and `main.cpp`.
+The two most interesting C++ files in this example are `MicroCore.cpp` and `main.cpp`.
 Therefore, I will present only these to files here. Full source code is
-at [github](https://github.com/moneroexamples/access-blockchain-in-cpp).
+at [github](https://github.com/moneroexamples/access-blockchain-in-cpp). The surfce code can
+also slighly vary with the code here, as it can be updated more frequently than 
+the code presented here. So for the latest version
+of this example, please check the github repository directly.
 
 ## MicroCore.cpp
 
-`MicroCore` class is a micro version of [cryptonode::core](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.h) class. The core class is the main
+`MicroCore` class is a micro version of [cryptonode::core](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.h) class. The `cryptonote::core` class is the main
 class with the access to the blockchain that the Monero daemon is using.
 In the `cryptonode::core` class, the most important method (at least for this example), is the [init](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.cpp#L206) method. The main goal of the `init` method
 is to create an instance of [Blockchain](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/blockchain.h) class. The `Blockchain` is the high level interface to blockchain database. The low level one is through `BlockchainLMDB` in our case, which
 can also be accessed through the `Blockchain` object.
 
-The original class does a lot of things, which we don't need here, such as reading program options. Thus its
+The original `cryptonote::core` class does a lot of things, which we don't need here, 
+such as reading program options. Thus its
 micro version was prepared for this example.
 
 ```c++
