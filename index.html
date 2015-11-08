@@ -55,7 +55,7 @@ the private viewkey of that address. The viewkey allows to filter out outputs no
 <p>Checking if any of a transaction's outputs belong to a given address
 with the private viewkey of that address is already possible using
  <a href="http://xmrtests.llcoins.net/checktx.html">XMR test</a> website. This is very good,
- since it allows us to very the results obtained using this example with those
+ since it allows us to verify the results obtained using this example with those
  provided by that website.</p>
 
 <h1>
@@ -64,8 +64,7 @@ with the private viewkey of that address is already possible using
 <p>Everthing here was done and tested on
 Ubuntu 14.04 x86_64 and Ubuntu 15.10 x86_64.</p>
 
-<p>Mine Monero node is using <code>lmdbq</code>, thus I use this database only in this example.
-I could not test on <code>berkeleydb</code>.</p>
+<p>Monero node that I run is using <code>lmdb</code> database for blockchain. Thus I use this database in this example.</p>
 
 <h2>
 <a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h2>
@@ -96,7 +95,7 @@ make <span class="pl-c"># or make -j number_of_threads, e.g., make -j 2</span></
 <p>When the compilation finishes, a number of static Monero libraries
 should be generated. We will need them to link against.</p>
 
-<p>Since they are spread around different subfolders of the <code>./build/</code> folder,
+<p>Since they are spread out over different subfolders of the <code>./build/</code> folder,
 it is easier to just copy them into one folder. I assume that
  <code>/opt/bitmonero-dev/libs</code> is the folder where they are going to be copied to.</p>
 
@@ -105,7 +104,7 @@ sudo mkdir -p /opt/bitmonero-dev/libs
 
 <span class="pl-c"># find the static libraries files (i.e., those with extension of *.a)</span>
 <span class="pl-c"># and copy them to /opt/bitmonero-dev/libs</span>
-<span class="pl-c"># assuming you are still in bitmonero/ folder which got downloaded from</span>
+<span class="pl-c"># assuming you are still in bitmonero/ folder which you downloaded from</span>
 <span class="pl-c"># github</span>
 sudo find ./build/ -name <span class="pl-s"><span class="pl-pds">'</span>*.a<span class="pl-pds">'</span></span> -exec cp {} /opt/bitmonero-dev/libs  <span class="pl-cce">\;</span></pre></div>
 
@@ -120,8 +119,8 @@ to hold the headers.</p>
 sudo mkdir -p /opt/bitmonero-dev/headers
 
 <span class="pl-c"># find the header files (i.e., those with extension of *.h)</span>
-<span class="pl-c"># and copy them to /opt/bitmonero-dev/headers</span>
-<span class="pl-c"># but this time the structure of directions is important</span>
+<span class="pl-c"># and copy them to /opt/bitmonero-dev/headers.</span>
+<span class="pl-c"># but this time the structure of directories is important</span>
 <span class="pl-c"># so rsync is used to find and copy the headers files</span>
 sudo rsync -zarv --include=<span class="pl-s"><span class="pl-pds">"</span>*/<span class="pl-pds">"</span></span> --include=<span class="pl-s"><span class="pl-pds">"</span>*.h<span class="pl-pds">"</span></span> --exclude=<span class="pl-s"><span class="pl-pds">"</span>*<span class="pl-pds">"</span></span> --prune-empty-dirs ./ /opt/bitmonero-dev/headers</pre></div>
 
@@ -141,20 +140,24 @@ accordingly.</p>
 <h1>
 <a id="c-code" class="anchor" href="#c-code" aria-hidden="true"><span class="octicon octicon-link"></span></a>C++ code</h1>
 
-<p>The two most interesting C++ source files in this example are <code>MicroCore.cpp</code> and <code>main.cpp</code>.
+<p>The two most interesting C++ files in this example are <code>MicroCore.cpp</code> and <code>main.cpp</code>.
 Therefore, I will present only these to files here. Full source code is
-at <a href="https://github.com/moneroexamples/access-blockchain-in-cpp">github</a>.</p>
+at <a href="https://github.com/moneroexamples/access-blockchain-in-cpp">github</a>. The surfce code can
+also slighly vary with the code here, as it can be updated more frequently than 
+the code presented here. So for the latest version
+of this example, please check the github repository directly.</p>
 
 <h2>
 <a id="microcorecpp" class="anchor" href="#microcorecpp" aria-hidden="true"><span class="octicon octicon-link"></span></a>MicroCore.cpp</h2>
 
-<p><code>MicroCore</code> class is a micro version of <a href="https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.h">cryptonode::core</a> class. The core class is the main
+<p><code>MicroCore</code> class is a micro version of <a href="https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.h">cryptonode::core</a> class. The <code>cryptonote::core</code> class is the main
 class with the access to the blockchain that the Monero daemon is using.
 In the <code>cryptonode::core</code> class, the most important method (at least for this example), is the <a href="https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.cpp#L206">init</a> method. The main goal of the <code>init</code> method
 is to create an instance of <a href="https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/blockchain.h">Blockchain</a> class. The <code>Blockchain</code> is the high level interface to blockchain database. The low level one is through <code>BlockchainLMDB</code> in our case, which
 can also be accessed through the <code>Blockchain</code> object.</p>
 
-<p>The original class does a lot of things, which we don't need here, such as reading program options. Thus its
+<p>The original <code>cryptonote::core</code> class does a lot of things, which we don't need here, 
+such as reading program options. Thus its
 micro version was prepared for this example.</p>
 
 <div class="highlight highlight-source-c++"><pre>#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">"</span>MicroCore.h<span class="pl-pds">"</span></span>
