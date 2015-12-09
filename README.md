@@ -36,7 +36,7 @@ with the private viewkey of that address is already possible using
  provided by that website.
 
 
-# Pre-requsits
+# Prerequisites
 
 Everthing here was done and tested on
 Ubuntu 14.04 x86_64 and Ubuntu 15.10 x86_64.
@@ -106,7 +106,7 @@ sudo mkdir -p /opt/bitmonero-dev/headers
 sudo rsync -zarv --include="*/" --include="*.h" --exclude="*" --prune-empty-dirs ./ /opt/bitmonero-dev/headers
  ```
 
-## cmake confing files
+## cmake config files
 `CMakeLists.txt` files and the structure of this project can be checked at
 [github](https://github.com/moneroexamples/access-blockchain-in-cpp).
 I wont be discussing them
