@@ -59,7 +59,7 @@ with the private viewkey of that address is already possible using
  provided by that website.</p>
 
 <h1>
-<a id="pre-requsits" class="anchor" href="#pre-requsits" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pre-requsits</h1>
+<a id="prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prerequisites</h1>
 
 <p>Everthing here was done and tested on
 Ubuntu 14.04 x86_64 and Ubuntu 15.10 x86_64.</p>
@@ -125,7 +125,7 @@ sudo mkdir -p /opt/bitmonero-dev/headers
 sudo rsync -zarv --include=<span class="pl-s"><span class="pl-pds">"</span>*/<span class="pl-pds">"</span></span> --include=<span class="pl-s"><span class="pl-pds">"</span>*.h<span class="pl-pds">"</span></span> --exclude=<span class="pl-s"><span class="pl-pds">"</span>*<span class="pl-pds">"</span></span> --prune-empty-dirs ./ /opt/bitmonero-dev/headers</pre></div>
 
 <h2>
-<a id="cmake-confing-files" class="anchor" href="#cmake-confing-files" aria-hidden="true"><span class="octicon octicon-link"></span></a>cmake confing files</h2>
+<a id="cmake-config-files" class="anchor" href="#cmake-config-files" aria-hidden="true"><span class="octicon octicon-link"></span></a>cmake config files</h2>
 
 <p><code>CMakeLists.txt</code> files and the structure of this project can be checked at
 <a href="https://github.com/moneroexamples/access-blockchain-in-cpp">github</a>.
@@ -230,6 +230,7 @@ micro version was prepared for this example.</p>
 
     <span class="pl-c">/**</span>
 <span class="pl-c">    * Get m_blockchain_storage.</span>
+<span class="pl-c">    * Initialize m_blockchain_storage with the BlockchainLMDB object.</span>
 <span class="pl-c">    */</span>
     Blockchain&amp;
     <span class="pl-en">MicroCore::get_core</span>()
@@ -379,7 +380,7 @@ options have default values which work.</p>
     }
 
 
-    <span class="pl-c">// parse string representing given private viewkey</span>
+    <span class="pl-c">// parse string representing of givenr private viewkey</span>
     crypto::secret_key prv_view_key;
     <span class="pl-k">if</span> (!<span class="pl-c1">xmreg::parse_str_secret_key</span>(viewkey_str, prv_view_key))
     {
@@ -470,7 +471,7 @@ options have default values which work.</p>
         <span class="pl-c">// check if the output's public key is ours</span>
         <span class="pl-k">if</span> (tx_out_to_key.<span class="pl-smi">key</span> == pubkey)
         {
-            <span class="pl-c">// if so, then add the xmr amount to the money_transfered</span>
+            <span class="pl-c">// if so, than add the xmr amount to the money_transfered</span>
             money_transfered += tx.<span class="pl-smi">vout</span>[i].<span class="pl-smi">amount</span>;
             cout &lt;&lt; <span class="pl-s"><span class="pl-pds">"</span>, mine key: <span class="pl-pds">"</span></span> &lt;&lt; <span class="pl-c1">cryptonote::print_money</span>(tx.<span class="pl-smi">vout</span>[i].<span class="pl-smi">amount</span>) &lt;&lt; endl;
         }
@@ -620,29 +621,6 @@ folder. How to use it, can be seen in the above example outputs.</p>
 
 <pre><code>48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU
 </code></pre>
-
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    
-    var disqus_config = function () {
-        this.page.url = 'https://moneroexamples.github.io/access-blockchain-in-cpp/'; 
-        this.page.identifier = 'access-blockchain-using-c++'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-    };
-    
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
-        
-        s.src = '//moneroexamples.disqus.com/embed.js';
-        
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/moneroexamples/access-blockchain-in-cpp">Monero Examples</a> is maintained by <a href="https://github.com/moneroexamples">moneroexamples</a>.</span>
