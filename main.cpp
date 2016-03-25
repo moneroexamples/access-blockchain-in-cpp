@@ -13,7 +13,9 @@ using boost::filesystem::is_directory;
 // without this it wont work. I'm not sure what it does.
 // it has something to do with locking the blockchain and tx pool
 // during certain operations to avoid deadlocks.
-unsigned int epee::g_test_dbg_lock_sleep = 0;
+namespace epee {
+    unsigned int g_test_dbg_lock_sleep = 0;
+}
 
 
 int main(int ac, const char* av[]) {
