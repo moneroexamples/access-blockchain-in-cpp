@@ -10,15 +10,9 @@ using namespace std;
 using boost::filesystem::path;
 using boost::filesystem::is_directory;
 
-// without this it wont work. I'm not sure what it does.
-// it has something to do with locking the blockchain and tx pool
-// during certain operations to avoid deadlocks.
-namespace epee {
-    unsigned int g_test_dbg_lock_sleep = 0;
-}
 
-
-int main(int ac, const char* av[]) {
+int main(int ac, const char* av[])
+{
 
     // get command line options
     xmreg::CmdLineOptions opts {ac, av};
@@ -66,29 +60,27 @@ int main(int ac, const char* av[]) {
 
     cout << "Blockchain path: " << blockchain_path << endl;
 
-    // enable basic monero log output
+    // set  monero log output level
     uint32_t log_level = 0;
-    epee::log_space::get_set_log_detalisation_level(true, log_level);
-    epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL);
+    mlog_configure("", true);
 
 
     // create instance of our MicroCore
+    // and make pointer to the Blockchain
     xmreg::MicroCore mcore;
+    cryptonote::Blockchain* core_storage;
 
-    // initialize the core using the blockchain path
-    if (!mcore.init(blockchain_path.string()))
+    // initialize mcore and core_storage
+    if (!xmreg::init_blockchain(blockchain_path.string(),
+                                mcore, core_storage))
     {
         cerr << "Error accessing blockchain." << endl;
-        return 1;
+        return EXIT_FAILURE;
     }
-
-    // get the highlevel cryptonote::Blockchain object to interact
-    // with the blockchain lmdb database
-    cryptonote::Blockchain& core_storage = mcore.get_core();
 
     // get the current blockchain height. Just to check
     // if it reads ok.
-    uint64_t height = core_storage.get_current_blockchain_height();
+    uint64_t height = core_storage->get_current_blockchain_height();
 
     cout << "Current blockchain height: " << height << endl;
 
@@ -118,7 +110,7 @@ int main(int ac, const char* av[]) {
     // this is done using get_tx_pub_key_from_str_hash function
     cryptonote::transaction tx;
 
-    if (!xmreg::get_tx_pub_key_from_str_hash(core_storage, tx_hash_str, tx))
+    if (!xmreg::get_tx_pub_key_from_str_hash(*core_storage, tx_hash_str, tx))
     {
         cerr << "Cant find transaction with hash: " << tx_hash_str << endl;
         return 1;

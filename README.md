@@ -5,7 +5,7 @@ any language capable of this, for example, as
 [shown in python](http://moneroexamples.github.io/python-json-rpc/). Another way
 is to use pubilc api of existing Monero services such as
  [moneroblocks](http://moneroblocks.eu/api). Some Monero functions are even
- avaliable in JavaScript if you look at the source code of [mymonero.com](https://mymonero.com/#/).
+ available in JavaScript if you look at the source code of [mymonero.com](https://mymonero.com/#/).
  This  allows to develop some web applications with only HTML and JavaScript, such as,
 [XMR test](http://xmrtests.llcoins.net/checktx.html).
 
@@ -15,9 +15,9 @@ However, there are no tutorials or any information how to do it.
 For this reason this example was created, i.e.,  to show how to access Monero C++ libraries
 and do something with them.
 
-Small disclaimer: I don't know if this is the correct way of doing
-this, but it seems to be working. If something is done in a stupid or wrong way,
-or my explanations in the comments are incorrect, please let me know.
+Note: The tool was adapted to work with current monero development version (0.10.1), but was not adapted 
+to work with ringct txs. For handing ringct txs, please check newer examples, for example
+[onion monero blockchain explorer](https://github.com/moneroexamples/onion-monero-blockchain-explorer)
 
 # Aim: check which transaction's outputs belong to a given address
 
@@ -38,209 +38,29 @@ with the private viewkey of that address is already possible using
 
 # Prerequisites
 
-Everthing here was done and tested on
-Ubuntu 14.04 x86_64 and Ubuntu 15.10 x86_64.
+The example uses Monero C++ libraries and headers. 
+ Instructions how to download source files and compile Monero,
+ setup header and library files are presented here:
 
-Monero node that I run is using `lmdb` database for blockchain. Thus I use this database in this example.
+- https://github.com/moneroexamples/compile-monero-09-on-ubuntu-16-04 (Ubuntu 16.04)
+- https://github.com/moneroexamples/compile-monero-09-on-arch-linux (Arch Linux)
 
-## Dependencies
-
-
-```bash
-# refresh ubuntu's repository
-sudo apt-get update
-
-#install git
-sudo apt-get install git
-
-# install dependencies
-sudo apt-get install build-essential cmake libboost1.55-all-dev miniupnpc libunbound-dev graphviz doxygen libdb5.1++-dev
-```
-
-## Monero compilation
-
-
-```bash
-# download the latest bitmonero source code from github
-git clone https://github.com/monero-project/bitmonero.git
-
-# go into bitmonero folder
-cd bitmonero/
-
-make # or make -j number_of_threads, e.g., make -j 2
-```
-
-## Monero static libraries
-When the compilation finishes, a number of static Monero libraries
-should be generated. We will need them to link against.
-
-Since they are spread out over different subfolders of the `./build/` folder,
-it is easier to just copy them into one folder. I assume that
- `/opt/bitmonero-dev/libs` is the folder where they are going to be copied to.
-
-```bash
-# create the folder
-sudo mkdir -p /opt/bitmonero-dev/libs
-
-# find the static libraries files (i.e., those with extension of *.a)
-# and copy them to /opt/bitmonero-dev/libs
-# assuming you are still in bitmonero/ folder which you downloaded from
-# github
-sudo find ./build/ -name '*.a' -exec cp {} /opt/bitmonero-dev/libs  \;
- ```
-
-## Monero headers
-
-Now we need to get Monero headers, as this is our interface to the
-Monero libraries. Folder `/opt/bitmonero-dev/headers` is assumed
-to hold the headers.
-
-```bash
-# create the folder
-sudo mkdir -p /opt/bitmonero-dev/headers
-
-# find the header files (i.e., those with extension of *.h)
-# and copy them to /opt/bitmonero-dev/headers.
-# but this time the structure of directories is important
-# so rsync is used to find and copy the headers files
-sudo rsync -zarv --include="*/" --include="*.h" --exclude="*" --prune-empty-dirs ./ /opt/bitmonero-dev/headers
- ```
-
-## cmake config files
-`CMakeLists.txt` files and the structure of this project can be checked at
-[github](https://github.com/moneroexamples/access-blockchain-in-cpp).
-I wont be discussing them
-here. I tried to put comments in `CMakeLists.txt` to clarify what is there.
-
-The location of the Monero's headers and static libraries must be correctly
-indicated in `CMakeLists.txt`. So if you place them in different folders
-that in this example, please change the root `CMakeLists.txt` file
-accordingly.
 
 # C++ code
+
 The two most interesting C++ files in this example are `MicroCore.cpp` and `main.cpp`.
 Therefore, I will present only these to files here. Full source code is
-at [github](https://github.com/moneroexamples/access-blockchain-in-cpp). The surfce code can
-also slighly vary with the code here, as it can be updated more frequently than 
+at [github](https://github.com/moneroexamples/access-blockchain-in-cpp). The source code can
+also slightly vary with the code here, as it can be updated more frequently than 
 the code presented here. So for the latest version
 of this example, please check the github repository directly.
 
-## MicroCore.cpp
-
-`MicroCore` class is a micro version of [cryptonode::core](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.h) class. The `cryptonote::core` class is the main
-class with the access to the blockchain that the Monero daemon is using.
-In the `cryptonode::core` class, the most important method (at least for this example), is the [init](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/cryptonote_core.cpp#L206) method. The main goal of the `init` method
-is to create an instance of [Blockchain](https://github.com/monero-project/bitmonero/blob/master/src/cryptonote_core/blockchain.h) class. The `Blockchain` is the high level interface to blockchain database. The low level one is through `BlockchainLMDB` in our case, which
-can also be accessed through the `Blockchain` object.
-
-The original `cryptonote::core` class does a lot of things, which we don't need here, 
-such as reading program options. Thus its
-micro version was prepared for this example.
-
-```c++
-#include "MicroCore.h"
-
-namespace xmreg
-{
-    /**
-     * The constructor is interesting, as
-     * m_mempool and m_blockchain_storage depend
-     * on each other.
-     *
-     * So basically m_mempool is initialized with
-     * reference to Blockchain (i.e., Blockchain&)
-     * and m_blockchain_storage is initialized with
-     * reference to m_mempool (i.e., tx_memory_pool&)
-     *
-     * The same is done in cryptonode::core.
-     */
-    MicroCore::MicroCore():
-            m_mempool(m_blockchain_storage),
-            m_blockchain_storage(m_mempool)
-    {}
-
-
-    /**
-     * Initialized the MicroCore object.
-     *
-     * Create BlockchainLMDB on the heap.
-     * Open database files located in blockchain_path.
-     * Initialize m_blockchain_storage with the BlockchainLMDB object.
-     */
-    bool
-    MicroCore::init(const string& blockchain_path)
-    {
-        int db_flags = 0;
-
-        // MDB_RDONLY will result in
-        // m_blockchain_storage.deinit() producing
-        // error messages.
-
-        //db_flags |= MDB_RDONLY ;
-
-        db_flags |= MDB_NOSYNC;
-
-        BlockchainDB* db = nullptr;
-        db = new BlockchainLMDB();
-
-        try
-        {
-            // try opening lmdb database files
-            db->open(blockchain_path, db_flags);
-        }
-        catch (const std::exception& e)
-        {
-            cerr << "Error opening database: " << e.what();
-            return false;
-        }
-
-        // check if the blockchain database
-        // is successful opened
-        if(!db->is_open())
-        {
-            return false;
-        }
-
-        // initialize Blockchain object to manage
-        // the database.
-        return m_blockchain_storage.init(db, false);
-    }
-
-    /**
-    * Get m_blockchain_storage.
-    * Initialize m_blockchain_storage with the BlockchainLMDB object.
-    */
-    Blockchain&
-    MicroCore::get_core()
-    {
-        return m_blockchain_storage;
-    }
-
-
-    /**
-     * De-initialized Blockchain.
-     *
-     * Its needed to mainly deallocate
-     * new BlockchainDB object
-     * created in the MicroCore::init().
-     *
-     * It also tries to synchronize the blockchain.
-     * And this is the reason when, if MDB_RDONLY
-     * is set, we are getting error messages. Because
-     * blockchain is readonly and we try to synchronize it.
-     */
-    MicroCore::~MicroCore()
-    {
-        m_blockchain_storage.deinit();
-    }
-}
-```
 
 ## main.cpp
 This is the main file of the example. For the program to work, four
 input values are required:
 
- - `address` - Monero adress.
+ - `address` - Monero address.
  - `viewkey` - private view key associated with the address provided.
  - `txhash`  - transaction id (i.e., hash) which outputs we want to check.
  - `bc-path` - a path to lmdb folder with the blockchain.
@@ -249,24 +69,6 @@ To run the program, at least correct `bc-path` is required. All other
 options have default values which work.
 
 ```c++
-#include <iostream>
-#include <string>
-
-#include "src/MicroCore.h"
-#include "src/CmdLineOptions.h"
-#include "src/tools.h"
-
-
-using namespace std;
-using boost::filesystem::path;
-using boost::filesystem::is_directory;
-
-// without this it wont work. I'm not sure what it does.
-// it has something to do with locking the blockchain and tx pool
-// during certain operations to avoid deadlocks.
-unsigned int epee::g_test_dbg_lock_sleep = 0;
-
-
 int main(int ac, const char* av[]) {
 
     // get command line options
@@ -315,29 +117,27 @@ int main(int ac, const char* av[]) {
 
     cout << "Blockchain path: " << blockchain_path << endl;
 
-    // enable basic monero log output
+    // set  monero log output level
     uint32_t log_level = 0;
-    epee::log_space::get_set_log_detalisation_level(true, log_level);
-    epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL);
+    mlog_configure("", true);
 
 
     // create instance of our MicroCore
+    // and make pointer to the Blockchain
     xmreg::MicroCore mcore;
+    cryptonote::Blockchain* core_storage;
 
-    // initialize the core using the blockchain path
-    if (!mcore.init(blockchain_path.string()))
+    // initialize mcore and core_storage
+    if (!xmreg::init_blockchain(blockchain_path.string(),
+                                mcore, core_storage))
     {
         cerr << "Error accessing blockchain." << endl;
-        return 1;
+        return EXIT_FAILURE;
     }
-
-    // get the highlevel cryptonote::Blockchain object to interact
-    // with the blockchain lmdb database
-    cryptonote::Blockchain& core_storage = mcore.get_core();
 
     // get the current blockchain height. Just to check
     // if it reads ok.
-    uint64_t height = core_storage.get_current_blockchain_height();
+    uint64_t height = core_storage->get_current_blockchain_height();
 
     cout << "Current blockchain height: " << height << endl;
 
@@ -352,7 +152,7 @@ int main(int ac, const char* av[]) {
     }
 
 
-    // parse string representing of givenr private viewkey
+    // parse string representing given private viewkey
     crypto::secret_key prv_view_key;
     if (!xmreg::parse_str_secret_key(viewkey_str, prv_view_key))
     {
@@ -364,9 +164,10 @@ int main(int ac, const char* av[]) {
     // we also need tx public key, but we have tx hash only.
     // to get the key, first, we obtained transaction object tx
     // and then we get its public key from tx's extras.
+    // this is done using get_tx_pub_key_from_str_hash function
     cryptonote::transaction tx;
 
-    if (!xmreg::get_tx_pub_key_from_str_hash(core_storage, tx_hash_str, tx))
+    if (!xmreg::get_tx_pub_key_from_str_hash(*core_storage, tx_hash_str, tx))
     {
         cerr << "Cant find transaction with hash: " << tx_hash_str << endl;
         return 1;
@@ -443,7 +244,7 @@ int main(int ac, const char* av[]) {
         // check if the output's public key is ours
         if (tx_out_to_key.key == pubkey)
         {
-            // if so, than add the xmr amount to the money_transfered
+            // if so, then add the xmr amount to the money_transfered
             money_transfered += tx.vout[i].amount;
             cout << ", mine key: " << cryptonote::print_money(tx.vout[i].amount) << endl;
         }
@@ -593,8 +394,3 @@ folder. How to use it, can be seen in the above example outputs.
 ## How can you help?
 
 Constructive criticism, code and website edits are always good. They can be made through github.
-
-Some Monero are also welcome:
-```
-48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU
-```

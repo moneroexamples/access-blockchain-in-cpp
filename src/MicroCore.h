@@ -8,13 +8,12 @@
 #include <iostream>
 
 #include "monero_headers.h"
-
-
-
+#include "tools.h"
 
 namespace xmreg
 {
     using namespace cryptonote;
+    using namespace crypto;
     using namespace std;
 
     /**
@@ -27,18 +26,53 @@ namespace xmreg
      */
     class MicroCore {
 
+        string blockchain_path;
+
         tx_memory_pool m_mempool;
         Blockchain m_blockchain_storage;
 
     public:
         MicroCore();
 
-        bool init(const string& blockchain_path);
+        bool
+        init(const string& _blockchain_path);
 
-        Blockchain& get_core();
+        Blockchain&
+        get_core();
+
+        bool
+        get_block_by_height(const uint64_t& height, block& blk);
+
+        bool
+        find_output_in_tx(const transaction& tx,
+                          const public_key& output_pubkey,
+                          tx_out& out,
+                          size_t& output_index);
+
+        bool
+        get_tx_hash_from_output_pubkey(const public_key& output_pubkey,
+                                       const uint64_t& block_height,
+                                       crypto::hash& tx_hash,
+                                       transaction& tx_found);
+
+        uint64_t
+        get_blk_timestamp(uint64_t blk_height);
+
+        string
+        get_blkchain_path();
+
 
         virtual ~MicroCore();
     };
+
+
+
+
+    bool
+    init_blockchain(const string& path,
+                    MicroCore& mcore,
+                    Blockchain*& core_storage);
+
 
 }
 
