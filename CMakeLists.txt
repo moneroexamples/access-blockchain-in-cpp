@@ -43,6 +43,7 @@ include_directories(
 # that are needed in this project
 
 
+
 add_library(common STATIC IMPORTED)
 set_property(TARGET common PROPERTY IMPORTED_LOCATION ${MONERO_LIBS_DIR}/libcommon.a)
 
@@ -53,6 +54,10 @@ add_library(cryptoxmr STATIC IMPORTED)
 set_property(TARGET cryptoxmr
         PROPERTY IMPORTED_LOCATION ${MONERO_LIBS_DIR}/libcrypto.a)
 
+add_library(cryptonote_basic STATIC IMPORTED)
+set_property(TARGET cryptonote_basic
+        PROPERTY IMPORTED_LOCATION ${MONERO_LIBS_DIR}/libcryptonote_basic.a)
+
 add_library(cryptonote_core STATIC IMPORTED)
 set_property(TARGET cryptonote_core
         PROPERTY IMPORTED_LOCATION ${MONERO_LIBS_DIR}/libcryptonote_core.a)
@@ -60,6 +65,10 @@ set_property(TARGET cryptonote_core
 add_library(cryptonote_protocol STATIC IMPORTED)
 set_property(TARGET cryptonote_protocol
         PROPERTY IMPORTED_LOCATION ${MONERO_LIBS_DIR}/libcryptonote_protocol.a)
+
+add_library(daemonizer STATIC IMPORTED)
+set_property(TARGET daemonizer
+        PROPERTY IMPORTED_LOCATION ${MONERO_LIBS_DIR}/libdaemonizer.a)
 
 add_library(mnemonics STATIC IMPORTED)
 set_property(TARGET mnemonics
@@ -97,13 +106,14 @@ add_executable(xmreg01
         ${SOURCE_FILES})
 
 
-# link our exexutable xmreg01 against
-# libraries
-target_link_libraries(xmreg01
+set(LIBRARIES
         myxrm
+        wallet
+        blockchain_db
         cryptonote_core
         cryptonote_protocol
-        blockchain_db
+        cryptonote_basic
+        daemonizer
         cryptoxmr
         blocks
         lmdb
@@ -114,5 +124,18 @@ target_link_libraries(xmreg01
         ${Boost_LIBRARIES}
         pthread
         unbound
-        unwind
+        curl
+        crypto
+        ssl)
+
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND NOT WIN32)
+    set(LIBRARIES ${LIBRARIES} unwind)
+endif()
+
+
+
+# link our exexutable xmreg01 against
+# libraries
+target_link_libraries(xmreg01
+        ${LIBRARIES}
         dl)

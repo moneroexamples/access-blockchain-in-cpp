@@ -8,14 +8,21 @@
 #define DB_LMDB   2
 #define BLOCKCHAIN_DB DB_LMDB
 
-#include "cryptonote_core/cryptonote_basic.h"
 #include "cryptonote_core/tx_pool.h"
 #include "cryptonote_core/blockchain.h"
 #include "blockchain_db/lmdb/db_lmdb.h"
 
+
+#include "ringct/rctTypes.h"
+#include "ringct/rctOps.h"
+#include "ringct/rctSigs.h"
+
+
 #include "easylogging++.h"
 
 #include "common/base58.h"
+
+#include "string_coding.h"
 
 
 #endif //XMREG01_MONERO_HEADERS_H_H
